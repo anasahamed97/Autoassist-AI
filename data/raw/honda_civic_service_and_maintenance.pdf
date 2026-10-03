@@ -1,0 +1,118 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R 9 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 587 >>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+14 TL
+(HONDA CIVIC WORKSHOP SERVICE & REPAIR MANUAL) '
+(Model: Honda Civic 1.5L Turbo / 2.0L) '
+(Model Year: 2022) '
+(Document Type: Workshop Manual) '
+(Source: American Honda Motor Technical Information) '
+() '
+(SECTION 1: GENERAL MAINTENANCE & FLUID SPECIFICATIONS) '
+() '
+(Engine Oil Capacity: 3.5 Liters with filter replacement.) '
+(Recommended Viscosity: Genuine Honda 0W-20 Full Synthetic Motor Oil.) '
+(Coolant Specification: Honda Long Life Antifreeze / Coolant Type 2 \(pre-mixed 50/50\).) '
+(Brake Fluid: Genuine Honda Heavy Duty Brake Fluid DOT 3.) '
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 644 >>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+14 TL
+(SECTION 2: COOLING SYSTEM DIAGNOSIS & BLEEDING) '
+() '
+(Engine Overheating Troubleshooting:) '
+(1. Check coolant reserve tank level when cold. If below MIN line, inspect for leaks.) '
+(2. If temperature gauge needle reaches H \(Hot\), turn off A/C and safely stop engine.) '
+(3. Radiator Fan Operation: Ensure both radiator fan and condenser fan activate when) '
+(   engine coolant temperature reaches 199 deg F \(93 deg C\).) '
+(4. Bleeding Air from Cooling System: Fill reserve tank to MAX. Loosen bleed bolt if) '
+(   equipped until coolant flows without air bubbles, then tighten to 7.2 lb-ft \(10 N-m\).) '
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 567 >>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+14 TL
+(SECTION 3: STARTING SYSTEM & 12V BATTERY TESTING) '
+() '
+(Starting Symptom: Clicking Noise / No Engine Crank) '
+(- If starter solenoid clicks rapidly, 12V battery terminal voltage is below 10.0V.) '
+(- Clean corroded battery posts with sodium bicarbonate solution and wire brush.) '
+(- Parasitic Draw Inspection: Standard quiescent current must be under 35mA after) '
+(  security system arms and BCM enters sleep mode \(allow 20 minutes\).) '
+(- Starter Relay Check: Swap starter cut relay with horn relay in engine under-hood box.) '
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 10 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+endobj
+10 0 obj
+<< /Length 516 >>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+14 TL
+(SECTION 4: BRAKE SYSTEM WEAR LIMITS & INSPECTION) '
+() '
+(Brake Pad Thickness Specification:) '
+(- Front Brake Pad Standard Thickness: 9.5 mm to 10.5 mm.) '
+(- Service Wear Limit: 1.6 mm \(replace pads immediately if below 2.0 mm\).) '
+(- Brake Rotor Thickness Standard: 25.0 mm. Minimum Refinish Limit: 23.0 mm.) '
+(- Brake Squeak / Squeal Cause: Wear indicators contact rotor when pad thickness) '
+(  drops below 2.5 mm. Replace front pad set and lubricate caliper sliding pins.) '
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000133 00000 n 
+0000000260 00000 n 
+0000000898 00000 n 
+0000001025 00000 n 
+0000001720 00000 n 
+0000001847 00000 n 
+0000002465 00000 n 
+0000002593 00000 n 
+0000003161 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R >>
+startxref
+3232
+%%EOF
