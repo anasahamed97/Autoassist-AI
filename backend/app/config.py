@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     data_raw_dir: Path = BASE_DIR / "data" / "raw"
     data_processed_dir: Path = BASE_DIR / "data" / "processed"
     models_dir: Path = BASE_DIR / "models"
+    static_dir: Path = BASE_DIR / "backend" / "app" / "static"
 
     model_config = {
         "env_file": str(env_path),

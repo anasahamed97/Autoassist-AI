@@ -1,0 +1,872 @@
+/**
+ * AutoAssist AI - Client Application Logic
+ * Powers RAG Semantic Search, Dedicated Problem Analyzers, and Guided Diagnostic Wizard.
+ */
+
+// Global State
+const state = {
+  currentVehicle: {
+    make: "Honda",
+    model: "Civic",
+    year: 2022,
+    mileage: 45000,
+  },
+  lastResult: null,
+  wizard: {
+    domain: null,
+    questions: [],
+    currentStep: 0,
+    answers: {},
+  },
+};
+
+// DOM Content Loaded
+document.addEventListener("DOMContentLoaded", () => {
+  initTabs();
+  initTheme();
+  initVehicleBar();
+  initRAGSearch();
+  initDTCScanner();
+  initElectricalAnalyzer();
+  initThermalAnalyzer();
+  initAcousticAnalyzer();
+  initBrakeAnalyzer();
+  initDrivetrainAnalyzer();
+  initEmissionsAnalyzer();
+  initWizard();
+  loadPriceGuide();
+  initWorkOrderModal();
+});
+
+// Tab Navigation
+function initTabs() {
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.tab;
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      tabPanels.forEach((p) => p.classList.remove("active"));
+
+      btn.classList.add("active");
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) {
+        targetPanel.classList.add("active");
+      }
+    });
+  });
+}
+
+// Dark / Light Theme Toggle
+function initTheme() {
+  const themeBtn = document.getElementById("theme-toggle-btn");
+  if (!themeBtn) return;
+
+  const savedTheme = localStorage.getItem("autoassist_theme") || "dark";
+  if (savedTheme === "light") {
+    document.body.classList.add("light-theme");
+    themeBtn.innerHTML = "🌙 Dark Mode";
+  }
+
+  themeBtn.addEventListener("click", () => {
+    const isLight = document.body.classList.toggle("light-theme");
+    localStorage.setItem("autoassist_theme", isLight ? "light" : "dark");
+    themeBtn.innerHTML = isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+  });
+}
+
+// Vehicle Selection State
+function initVehicleBar() {
+  const makeSel = document.getElementById("vehicle-make");
+  const modelSel = document.getElementById("vehicle-model");
+  const yearSel = document.getElementById("vehicle-year");
+  const mileageInput = document.getElementById("vehicle-mileage");
+
+  function updateVehicle() {
+    state.currentVehicle = {
+      make: makeSel ? makeSel.value : "Generic",
+      model: modelSel ? modelSel.value : "Generic",
+      year: yearSel ? parseInt(yearSel.value, 10) : 2022,
+      mileage: mileageInput ? parseInt(mileageInput.value, 10) : 45000,
+    };
+  }
+
+  if (makeSel) makeSel.addEventListener("change", updateVehicle);
+  if (modelSel) modelSel.addEventListener("change", updateVehicle);
+  if (yearSel) yearSel.addEventListener("change", updateVehicle);
+  if (mileageInput) mileageInput.addEventListener("change", updateVehicle);
+}
+
+// Render Universal Diagnostic Result Box
+function renderDiagnosticResult(result, targetContainerId) {
+  state.lastResult = result;
+  const container = document.getElementById(targetContainerId);
+  if (!container) return;
+
+  const isSafe = result.is_safe_to_drive;
+  const advisoryClass = isSafe ? "advisory-safe" : "advisory-danger";
+  const advisoryIcon = isSafe ? "✅" : "⚠️";
+
+  // Build Probabilities
+  let causesHtml = "";
+  if (result.probable_causes && result.probable_causes.length > 0) {
+    causesHtml = `
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Probable Root Causes & Likelihood</h3>
+      <div class="cause-list">
+        ${result.probable_causes
+          .map(
+            (c) => `
+          <div class="cause-item">
+            <div class="cause-top">
+              <span>${c.title}</span>
+              <span class="cause-prob">${c.probability}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: ${c.probability}%"></div>
+            </div>
+            <p class="cause-expl">${c.explanation}</p>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  // Build Action Steps
+  let stepsHtml = "";
+  if (result.action_plan && result.action_plan.length > 0) {
+    stepsHtml = `
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Recommended Diagnostic & Repair Steps</h3>
+      <div class="steps-container">
+        ${result.action_plan
+          .map(
+            (s) => `
+          <div class="step-row">
+            <div class="step-num">${s.step_number}</div>
+            <div class="step-content">
+              <h4>${s.title}</h4>
+              <p>${s.description}</p>
+              ${
+                s.tools_needed && s.tools_needed.length > 0
+                  ? `<div class="step-tools">🔧 <strong>Tools:</strong> ${s.tools_needed.join(", ")}</div>`
+                  : ""
+              }
+            </div>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  // Build Cost Estimate
+  let costHtml = "";
+  if (result.cost_estimate) {
+    const ce = result.cost_estimate;
+    const partsDisplay = ce.diy_parts_cost_range_inr || ce.diy_parts_cost_range_usd || "₹0";
+    const totalDisplay = ce.professional_total_cost_range_inr || ce.professional_total_cost_range_usd || "₹0";
+    costHtml = `
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Estimated Repair Cost & Difficulty</h3>
+      <div class="cost-grid">
+        <div class="cost-box">
+          <span class="cost-label">DIY Parts Range (₹)</span>
+          <span class="cost-val" style="color: var(--accent-cyan);">${partsDisplay}</span>
+        </div>
+        <div class="cost-box">
+          <span class="cost-label">Pro Shop Total (₹)</span>
+          <span class="cost-val" style="color: var(--accent-emerald);">${totalDisplay}</span>
+        </div>
+        <div class="cost-box">
+          <span class="cost-label">Labor Estimate</span>
+          <span class="cost-val">${ce.professional_labor_hours} hrs</span>
+        </div>
+        <div class="cost-box">
+          <span class="cost-label">Skill Rating</span>
+          <span class="cost-val">${ce.difficulty}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Build RAG Manual References
+  let ragHtml = "";
+  if (result.rag_reference_chunks && result.rag_reference_chunks.length > 0) {
+    ragHtml = `
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Verified Service Manual References (RAG)</h3>
+      <div class="rag-chunks-list">
+        ${result.rag_reference_chunks
+          .map(
+            (chunk) => `
+          <div class="rag-chunk-card">
+            <div class="rag-chunk-header">
+              <span>📖 ${chunk.document_title || "Service Manual"} — ${chunk.section || "Technical Procedure"}</span>
+              <span style="font-size: 0.75rem;">Match: ${Math.round((chunk.similarity || 0) * 100)}%</span>
+            </div>
+            <div class="rag-chunk-text">${chunk.content}</div>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="verdict-header">
+      <div>
+        <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 0.5px; font-weight: 700;">
+          ${result.subsystem}
+        </span>
+        <h2 class="verdict-title">${result.primary_verdict}</h2>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <span class="badge-risk badge-${result.urgency}">Urgency: ${result.urgency}</span>
+        <button class="btn-icon" onclick="openWorkOrderModal()" style="font-size: 0.75rem;">
+          🖨️ Export Work Order
+        </button>
+      </div>
+    </div>
+
+    <div class="advisory-box ${advisoryClass}">
+      <span style="font-size: 1.25rem;">${advisoryIcon}</span>
+      <div>
+        <strong>${isSafe ? "Safe to Drive with Caution" : "DO NOT DRIVE HAZARD"}</strong>
+        <p style="margin-top: 0.2rem;">${result.driving_advisory}</p>
+      </div>
+    </div>
+
+    ${causesHtml}
+    ${stepsHtml}
+    ${costHtml}
+    ${ragHtml}
+
+    <p style="margin-top: 1.25rem; font-size: 0.7rem; color: var(--text-dim); text-align: center;">
+      ⚠️ ${result.safety_disclaimer}
+    </p>
+  `;
+
+  container.classList.add("visible");
+  container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// 1. RAG Semantic Knowledge Search
+function initRAGSearch() {
+  const form = document.getElementById("rag-search-form");
+  const input = document.getElementById("rag-query-input");
+  const resultsContainer = document.getElementById("rag-results");
+  const quickChips = document.querySelectorAll(".rag-quick-chip");
+
+  quickChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      if (input) {
+        input.value = chip.dataset.query;
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    resultsContainer.innerHTML = `
+      <div style="padding: 2rem; text-align: center; color: var(--accent-cyan);">
+        <div class="status-dot" style="margin: 0 auto 0.75rem; width: 12px; height: 12px;"></div>
+        Searching 129 technical manual chunks with 384d semantic embeddings...
+      </div>
+    `;
+
+    try {
+      const resp = await fetch("/api/rag/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: query,
+          top_k: 5,
+          similarity_threshold: 0.20,
+          manufacturer: state.currentVehicle.make !== "Generic" ? state.currentVehicle.make : null,
+        }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Server returned HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      renderRAGSearchResults(data, resultsContainer);
+    } catch (err) {
+      resultsContainer.innerHTML = `
+        <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
+          <strong>Retrieval Error:</strong> ${err.message}. Please verify the backend is running.
+        </div>
+      `;
+    }
+  });
+}
+
+function renderRAGSearchResults(data, container) {
+  if (!data.results || data.results.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+        No technical manual sections met the similarity threshold for this query. Try rephrasing your mechanical symptom.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <span style="font-size: 0.85rem; color: var(--text-muted);">
+        Found <strong>${data.total_results}</strong> matches in <strong>${data.latency_ms.toFixed(1)}ms</strong>
+      </span>
+      <span style="font-size: 0.75rem; color: var(--accent-cyan); font-family: monospace;">all-MiniLM-L6-v2 ONNX</span>
+    </div>
+
+    <div class="rag-chunks-list">
+      ${data.results
+        .map(
+          (item, idx) => `
+        <div class="rag-chunk-card" style="border-left-width: 4px;">
+          <div class="rag-chunk-header">
+            <div>
+              <span style="background: rgba(0, 242, 254, 0.1); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">#${idx + 1}</span>
+              <strong>${item.document_title}</strong>
+              <span style="color: var(--text-dim); font-size: 0.75rem;"> • ${item.section || "Technical Guide"} (Page ${item.page_number || 1})</span>
+            </div>
+            <div style="font-family: monospace; font-size: 0.8rem; color: var(--accent-cyan);">
+              Cosine Sim: ${item.similarity.toFixed(4)}
+            </div>
+          </div>
+          <div class="rag-chunk-text" style="font-size: 0.85rem; margin-top: 0.5rem;">${item.content}</div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+// 2. OBD-II / DTC Scanner
+function initDTCScanner() {
+  const form = document.getElementById("dtc-form");
+  const codeInput = document.getElementById("dtc-code-input");
+  const quickCodes = document.querySelectorAll(".dtc-quick-code");
+
+  quickCodes.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (codeInput) {
+        codeInput.value = btn.dataset.code;
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = codeInput.value.trim();
+    if (!code) return;
+
+    const payload = {
+      code: code,
+      vehicle_make: state.currentVehicle.make,
+      vehicle_model: state.currentVehicle.model,
+      include_rag_chunks: true,
+      freeze_frame: {
+        engine_rpm: parseInt(document.getElementById("ff-rpm")?.value || "0", 10) || null,
+        short_term_fuel_trim_pct: parseFloat(document.getElementById("ff-stft")?.value || "0") || null,
+        long_term_fuel_trim_pct: parseFloat(document.getElementById("ff-ltft")?.value || "0") || null,
+        engine_coolant_temp_f: parseFloat(document.getElementById("ff-ect")?.value || "0") || null,
+        battery_voltage: parseFloat(document.getElementById("ff-volt")?.value || "0") || null,
+      },
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/dtc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "dtc-result-box");
+    } catch (err) {
+      alert("DTC Analysis error: " + err.message);
+    }
+  });
+}
+
+// 3. Electrical Multimeter Analyzer
+function initElectricalAnalyzer() {
+  const form = document.getElementById("electrical-form");
+  const restingSlider = document.getElementById("resting-voltage-slider");
+  const restingVal = document.getElementById("resting-voltage-val");
+
+  if (restingSlider && restingVal) {
+    restingSlider.addEventListener("input", () => {
+      restingVal.innerText = `${restingSlider.value} V`;
+    });
+  }
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      resting_voltage: parseFloat(document.getElementById("resting-voltage-slider")?.value || "12.6"),
+      cranking_voltage: parseFloat(document.getElementById("cranking-voltage-input")?.value || "10.2"),
+      alternator_running_voltage: parseFloat(document.getElementById("alternator-voltage-input")?.value || "14.2"),
+      parasitic_draw_ma: parseFloat(document.getElementById("parasitic-draw-input")?.value || "35.0"),
+      battery_age_years: parseFloat(document.getElementById("battery-age-input")?.value || "2.0"),
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/electrical", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "electrical-result-box");
+    } catch (err) {
+      alert("Electrical Analysis error: " + err.message);
+    }
+  });
+}
+
+// 4. Thermal / Overheating Analyzer
+function initThermalAnalyzer() {
+  const form = document.getElementById("thermal-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      driving_condition: document.getElementById("thermal-condition")?.value || "idle_traffic",
+      coolant_level: document.getElementById("thermal-coolant-level")?.value || "normal",
+      electric_fan_running: document.getElementById("thermal-fan-status")?.value || "unknown",
+      cabin_heater_output: document.getElementById("thermal-heater-output")?.value || "hot",
+      hose_temperature_differential: document.getElementById("thermal-hose-temp")?.value || "unknown",
+      white_exhaust_smoke_or_milky_oil: document.getElementById("thermal-smoke-oil")?.checked || false,
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/thermal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "thermal-result-box");
+    } catch (err) {
+      alert("Thermal Analysis error: " + err.message);
+    }
+  });
+}
+
+// 5. NVH Acoustic Sound Analyzer
+function initAcousticAnalyzer() {
+  const form = document.getElementById("acoustic-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      sound_type: document.getElementById("sound-type")?.value || "squeal_chirp",
+      location: document.getElementById("sound-location")?.value || "front_wheel_brakes",
+      condition: document.getElementById("sound-condition")?.value || "when_braking",
+      speed_dependent: document.getElementById("sound-speed-dep")?.checked || false,
+      rpm_dependent: document.getElementById("sound-rpm-dep")?.checked || false,
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/acoustic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "acoustic-result-box");
+    } catch (err) {
+      alert("Acoustic Analysis error: " + err.message);
+    }
+  });
+}
+
+// 6. Brake System Analyzer
+function initBrakeAnalyzer() {
+  const form = document.getElementById("brake-form");
+  const padSlider = document.getElementById("brake-pad-slider");
+  const padVal = document.getElementById("brake-pad-val");
+
+  if (padSlider && padVal) {
+    padSlider.addEventListener("input", () => {
+      const mm = parseFloat(padSlider.value);
+      padVal.innerText = `${mm} mm (${mm <= 2 ? "CRITICAL" : mm <= 4 ? "CAUTION" : "GOOD"})`;
+      padVal.style.color = mm <= 2 ? "var(--accent-crimson)" : mm <= 4 ? "var(--accent-amber)" : "var(--accent-emerald)";
+    });
+  }
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      pad_thickness_mm: parseFloat(document.getElementById("brake-pad-slider")?.value || "3.0"),
+      pedal_feel: document.getElementById("brake-pedal-feel")?.value || "normal_firm",
+      rotor_condition: document.getElementById("brake-rotor-cond")?.value || "smooth",
+      pulls_when_braking: document.getElementById("brake-pull")?.value || "none",
+      abs_warning_light: document.getElementById("brake-abs-light")?.checked || false,
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/brake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "brake-result-box");
+    } catch (err) {
+      alert("Brake Analysis error: " + err.message);
+    }
+  });
+}
+
+// 7. Transmission & Drivetrain Analyzer
+function initDrivetrainAnalyzer() {
+  const form = document.getElementById("drivetrain-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      transmission_type: document.getElementById("trans-type")?.value || "automatic_torque_converter",
+      symptom: document.getElementById("trans-symptom")?.value || "slipping_rpm_flares",
+      fluid_color: document.getElementById("trans-fluid-color")?.value || "cherry_red_clean",
+      fluid_level: document.getElementById("trans-fluid-level")?.value || "normal",
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/drivetrain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "drivetrain-result-box");
+    } catch (err) {
+      alert("Drivetrain Analysis error: " + err.message);
+    }
+  });
+}
+
+// 8. Fuel Trim & Emissions Analyzer
+function initEmissionsAnalyzer() {
+  const form = document.getElementById("emissions-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      stft_idle_pct: parseFloat(document.getElementById("em-stft-idle")?.value || "0.0"),
+      ltft_idle_pct: parseFloat(document.getElementById("em-ltft-idle")?.value || "0.0"),
+      stft_2500rpm_pct: parseFloat(document.getElementById("em-stft-2500")?.value || "0.0"),
+      ltft_2500rpm_pct: parseFloat(document.getElementById("em-ltft-2500")?.value || "0.0"),
+      exhaust_smoke_color: document.getElementById("em-exhaust-smoke")?.value || "none",
+      raw_fuel_odor: document.getElementById("em-fuel-smell")?.checked || false,
+      include_rag_chunks: true,
+    };
+
+    try {
+      const resp = await fetch("/api/analyzers/emissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      renderDiagnosticResult(data, "emissions-result-box");
+    } catch (err) {
+      alert("Emissions Analysis error: " + err.message);
+    }
+  });
+}
+
+// 9. Interactive Guided Diagnostic Wizard
+function initWizard() {
+  const domainBtns = document.querySelectorAll(".wizard-domain-btn");
+  const stageDomains = document.getElementById("wizard-stage-domains");
+  const stageQuestions = document.getElementById("wizard-stage-questions");
+
+  domainBtns.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const domain = btn.dataset.domain;
+      state.wizard.domain = domain;
+      state.wizard.answers = {};
+      state.wizard.currentStep = 0;
+
+      try {
+        const resp = await fetch("/api/analyzers/wizard/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: domain }),
+        });
+        const data = await resp.json();
+        state.wizard.questions = data.questions || [];
+
+        if (stageDomains) stageDomains.style.display = "none";
+        if (stageQuestions) stageQuestions.style.display = "block";
+        renderWizardQuestion();
+      } catch (err) {
+        alert("Failed to start wizard: " + err.message);
+      }
+    });
+  });
+}
+
+function renderWizardQuestion() {
+  const container = document.getElementById("wizard-question-content");
+  if (!container) return;
+
+  const q = state.wizard.questions[state.wizard.currentStep];
+  if (!q) {
+    finalizeWizard();
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="margin-bottom: 1.25rem;">
+      <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent-cyan); font-weight: 700;">
+        Step ${state.wizard.currentStep + 1} of ${state.wizard.questions.length}
+      </span>
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 0.25rem;">${q.prompt}</h3>
+    </div>
+
+    <div class="wizard-options-grid">
+      ${q.options
+        .map(
+          (opt) => `
+        <button class="wizard-opt-btn" onclick="selectWizardOption('${q.id}', '${opt.id}')">
+          <span class="opt-title">${opt.label}</span>
+          ${opt.hint ? `<span class="opt-hint">${opt.hint}</span>` : ""}
+        </button>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+window.selectWizardOption = function (questionId, optionId) {
+  state.wizard.answers[questionId] = optionId;
+  state.wizard.currentStep += 1;
+
+  if (state.wizard.currentStep < state.wizard.questions.length) {
+    renderWizardQuestion();
+  } else {
+    finalizeWizard();
+  }
+};
+
+async function finalizeWizard() {
+  const container = document.getElementById("wizard-question-content");
+  if (container) {
+    container.innerHTML = `
+      <div style="padding: 2rem; text-align: center; color: var(--accent-cyan);">
+        <div class="status-dot" style="margin: 0 auto 0.75rem; width: 12px; height: 12px;"></div>
+        Synthesizing symptom answers and cross-referencing automotive service manuals...
+      </div>
+    `;
+  }
+
+  try {
+    const resp = await fetch("/api/analyzers/wizard/step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        domain: state.wizard.domain,
+        answers: state.wizard.answers,
+        include_rag_chunks: true,
+      }),
+    });
+    const data = await resp.json();
+    renderDiagnosticResult(data, "wizard-result-box");
+
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 1.5rem;">
+          <h3 style="font-size: 1.1rem; color: var(--accent-emerald);">Diagnostic Work Order Generated Below</h3>
+          <button class="btn-primary" onclick="resetWizard()" style="margin-top: 1rem;">
+            🔄 Run Another Diagnostic Case
+          </button>
+        </div>
+      `;
+    }
+  } catch (err) {
+    alert("Wizard evaluation failed: " + err.message);
+  }
+}
+
+window.resetWizard = function () {
+  const stageDomains = document.getElementById("wizard-stage-domains");
+  const stageQuestions = document.getElementById("wizard-stage-questions");
+  const resultBox = document.getElementById("wizard-result-box");
+
+  if (stageDomains) stageDomains.style.display = "block";
+  if (stageQuestions) stageQuestions.style.display = "none";
+  if (resultBox) {
+    resultBox.classList.remove("visible");
+    resultBox.innerHTML = "";
+  }
+};
+
+// 10. Load Price Guide Table
+async function loadPriceGuide() {
+  const tbody = document.getElementById("price-guide-tbody");
+  if (!tbody) return;
+
+  try {
+    const resp = await fetch("/api/analyzers/repairs/price-guide");
+    const data = await resp.json();
+
+    const rows = Object.entries(data).map(([key, item]) => {
+      const cleanName = key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+      return `
+        <tr>
+          <td style="padding: 0.75rem 1rem; font-weight: 600; color: var(--text-main);">${cleanName}</td>
+          <td style="padding: 0.75rem 1rem; color: var(--accent-cyan);">${item.parts}</td>
+          <td style="padding: 0.75rem 1rem; color: var(--text-muted);">${item.labor_hours} hrs</td>
+          <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--accent-emerald);">${item.pro_total}</td>
+          <td style="padding: 0.75rem 1rem;"><span class="badge-risk badge-MEDIUM" style="font-size: 0.7rem;">${item.difficulty}</span></td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rows.join("");
+  } catch (e) {
+    console.error("Could not load price guide:", e);
+  }
+}
+
+// Printable Work Order Modal
+function initWorkOrderModal() {
+  const modal = document.getElementById("work-order-modal");
+  const closeBtn = document.getElementById("modal-close-btn");
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("open");
+    });
+  }
+
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.remove("open");
+    }
+  });
+}
+
+window.openWorkOrderModal = function () {
+  const modal = document.getElementById("work-order-modal");
+  const content = document.getElementById("work-order-content");
+  if (!modal || !content) return;
+
+  const res = state.lastResult;
+  if (!res) {
+    alert("Please run a diagnostic analysis first before generating a work order.");
+    return;
+  }
+
+  const v = state.currentVehicle;
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  content.innerHTML = `
+    <div style="border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">AUTOASSIST AI REPAIR ORDER</h2>
+          <p style="font-size: 0.78rem; color: var(--text-muted);">Certified Diagnostic Sheet & Mechanical Assessment</p>
+        </div>
+        <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
+          <div>Date: <strong>${today}</strong></div>
+          <div>RO Number: <strong>#AGY-${Math.floor(100000 + Math.random() * 900000)}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; background: var(--bg-card); padding: 0.85rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.82rem;">
+      <div><span style="color: var(--text-dim);">Vehicle Make:</span><br><strong>${v.make}</strong></div>
+      <div><span style="color: var(--text-dim);">Model:</span><br><strong>${v.model}</strong></div>
+      <div><span style="color: var(--text-dim);">Year:</span><br><strong>${v.year}</strong></div>
+      <div><span style="color: var(--text-dim);">Mileage:</span><br><strong>${v.mileage.toLocaleString()} mi</strong></div>
+    </div>
+
+    <div style="margin-bottom: 1.25rem;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">1. Diagnostic Verdict</h3>
+      <p style="font-size: 1.15rem; font-weight: 700; margin: 0.35rem 0;">${res.primary_verdict}</p>
+      <div style="font-size: 0.85rem; padding: 0.5rem 0.75rem; background: rgba(0, 242, 254, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
+        <strong>Safety Advisory:</strong> ${res.driving_advisory}
+      </div>
+    </div>
+
+    <div style="margin-bottom: 1.25rem;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">2. Root Causes Identified</h3>
+      <ul style="margin-left: 1.25rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5;">
+        ${res.probable_causes
+          .map(
+            (c) => `<li><strong>${c.title}</strong> (${c.probability}% likelihood) — ${c.explanation}</li>`
+          )
+          .join("")}
+      </ul>
+    </div>
+
+    <div style="margin-bottom: 1.25rem;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">3. Prescribed Action Steps</h3>
+      <ol style="margin-left: 1.25rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5;">
+        ${res.action_plan
+          .map(
+            (s) => `<li><strong>${s.title}:</strong> ${s.description} ${s.tools_needed && s.tools_needed.length > 0 ? `<em>(Tools: ${s.tools_needed.join(", ")})</em>` : ""}</li>`
+          )
+          .join("")}
+      </ol>
+    </div>
+
+    ${
+      res.cost_estimate
+        ? `
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">4. Estimated Cost & Labor</h3>
+        <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; margin-top: 0.4rem;">
+          <div>Parts Cost (INR): <strong>${res.cost_estimate.diy_parts_cost_range_inr || res.cost_estimate.diy_parts_cost_range_usd}</strong></div>
+          <div>Labor Hours: <strong>${res.cost_estimate.professional_labor_hours} hrs</strong></div>
+          <div>Pro Shop Total (INR): <strong>${res.cost_estimate.professional_total_cost_range_inr || res.cost_estimate.professional_total_cost_range_usd}</strong></div>
+        </div>
+      </div>
+    `
+        : ""
+    }
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+      <button class="btn-primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+  `;
+
+  modal.classList.add("open");
+};

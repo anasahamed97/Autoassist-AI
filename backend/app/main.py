@@ -1,8 +1,13 @@
 import logging
-from fastapi import FastAPI
+from pathlib import Path
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.app.config import settings
 from backend.app.api.rag import router as rag_router
+from backend.app.api.analyzers import router as analyzers_router
 
 # Configure logging format
 logging.basicConfig(
@@ -14,14 +19,15 @@ logger = logging.getLogger("autoassist.api")
 app = FastAPI(
     title="AutoAssist AI - Automotive Diagnostic & Service Assistance Platform",
     description=(
-        "Backend RAG Retrieval & Knowledge API (Milestone 1). "
+        "Production Automotive Diagnostic Intelligence & RAG Platform. "
         "Allows querying automotive service manuals, diagnostic trouble codes (DTC), "
-        "and maintenance guides via local sentence embeddings and Supabase pgvector."
+        "and running specialized problem analyzers for electrical, thermal, acoustic, "
+        "braking, transmission, and emissions systems."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
-# Enable CORS for local web development (Milestone 3 compatibility)
+# Enable CORS for web development and cross-origin clients
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,24 +36,62 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register RAG retrieval router
+# Register routers
 app.include_router(rag_router)
+app.include_router(analyzers_router)
+
+# Mount static web assets if directory exists
+if settings.static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(settings.static_dir)), name="static")
 
 
 @app.get("/", tags=["General"])
-async def root():
+async def root(request: Request):
+    """
+    Serves the modern AutoAssist AI diagnostic web application when accessed from a web browser,
+    or returns API metadata JSON when called by API clients.
+    """
+    accept = request.headers.get("accept", "")
+    index_file = settings.static_dir / "index.html"
+    if "text/html" in accept and index_file.exists():
+        return FileResponse(index_file)
+
     return {
         "platform": "AutoAssist AI",
-        "milestone": "Milestone 1 - RAG Knowledge & Retrieval System",
+        "milestone": "Full Automotive Diagnostic & Service Assistance Platform",
         "status": "online",
         "embedding_model": settings.embedding_model_name,
         "embedding_dimension": settings.embedding_dimension,
         "docs_url": "/docs",
+        "website_url": "/",
         "endpoints": {
             "search": "POST /api/rag/search",
+            "analyzers_catalog": "GET /api/analyzers/catalog",
+            "dtc_analyzer": "POST /api/analyzers/dtc",
+            "electrical_analyzer": "POST /api/analyzers/electrical",
+            "thermal_analyzer": "POST /api/analyzers/thermal",
+            "acoustic_analyzer": "POST /api/analyzers/acoustic",
+            "brake_analyzer": "POST /api/analyzers/brake",
+            "drivetrain_analyzer": "POST /api/analyzers/drivetrain",
+            "emissions_analyzer": "POST /api/analyzers/emissions",
+            "wizard_start": "POST /api/analyzers/wizard/start",
+            "wizard_step": "POST /api/analyzers/wizard/step",
+            "price_guide": "GET /api/analyzers/repairs/price-guide",
             "health": "GET /health",
         },
     }
+
+
+@app.get("/app", response_class=FileResponse, tags=["General"])
+async def web_app():
+    """Explicit endpoint to serve the single-page web dashboard."""
+    index_file = settings.static_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return JSONResponse(
+        status_code=404,
+        content={"error": "Web application static assets not found."}
+    )
 
 
 @app.get("/health", tags=["General"])
@@ -55,9 +99,10 @@ async def health_check():
     supabase_configured = bool(settings.supabase_url and (settings.supabase_key or settings.supabase_service_role_key))
     return {
         "status": "healthy",
-        "database": "supabase_pgvector",
+        "database": "supabase_pgvector" if supabase_configured else "local_onnx_knowledge_base",
         "supabase_configured": supabase_configured,
         "embedding_dimension": settings.embedding_dimension,
+        "analyzers_count": 8,
     }
 
 
