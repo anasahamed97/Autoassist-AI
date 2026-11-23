@@ -11,5 +11,5 @@ set "PATH=C:\Users\anasa\anaconda3;C:\Users\anasa\anaconda3\Scripts;C:\Users\ana
 :: Open default browser after 2 seconds
 start "" cmd /c "timeout /t 2 /nobreak >nul & start http://127.0.0.1:8000/"
 
-"C:\Users\anasa\anaconda3\python.exe" -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+"C:\Users\anasa\anaconda3\python.exe" -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 pause

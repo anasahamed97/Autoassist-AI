@@ -4,20 +4,189 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoAssist AI - Automotive Diagnostic & Service Intelligence Platform</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/styles.css?v=2.6">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  <script>
+    // Global Immediate View & Demo Controller (Synchronous & Bulletproof)
+    function switchStudioTab(tabId) {
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      var tabPanels = document.querySelectorAll(".tab-panel");
+
+      tabBtns.forEach(function(b) {
+        if (b.getAttribute("data-tab") === tabId) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+
+      tabPanels.forEach(function(p) {
+        if (p.id === tabId) {
+          p.classList.add("active");
+          p.style.display = "block";
+        } else {
+          p.classList.remove("active");
+          p.style.display = "none";
+        }
+      });
+    }
+
+    function navigateToView(viewName, targetTabId) {
+      var viewIntro = document.getElementById("view-intro");
+      var viewStudio = document.getElementById("view-studio");
+      var navBtnIntro = document.getElementById("nav-btn-intro");
+      var navBtnStudio = document.getElementById("nav-btn-studio");
+
+      if (viewName === "studio") {
+        if (viewIntro) {
+          viewIntro.classList.remove("active");
+          viewIntro.style.display = "none";
+        }
+        if (viewStudio) {
+          viewStudio.classList.add("active");
+          viewStudio.style.display = "block";
+        }
+        if (navBtnIntro) navBtnIntro.classList.remove("active");
+        if (navBtnStudio) navBtnStudio.classList.add("active");
+
+        if (targetTabId) {
+          switchStudioTab(targetTabId);
+        } else {
+          var activeTab = document.querySelector(".tab-btn.active");
+          if (activeTab && activeTab.getAttribute("data-tab")) {
+            switchStudioTab(activeTab.getAttribute("data-tab"));
+          } else {
+            switchStudioTab("tab-rag");
+          }
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        if (viewStudio) {
+          viewStudio.classList.remove("active");
+          viewStudio.style.display = "none";
+        }
+        if (viewIntro) {
+          viewIntro.classList.add("active");
+          viewIntro.style.display = "block";
+        }
+        if (navBtnStudio) navBtnStudio.classList.remove("active");
+        if (navBtnIntro) navBtnIntro.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function runDemo(demoType) {
+      if (demoType === "dtc_p0300") {
+        navigateToView("studio", "tab-dtc");
+        setTimeout(function() {
+          var input = document.getElementById("dtc-code-input");
+          var rpm = document.getElementById("ff-rpm");
+          var stft = document.getElementById("ff-stft");
+          var ltft = document.getElementById("ff-ltft");
+          var ect = document.getElementById("ff-ect");
+          var volt = document.getElementById("ff-volt");
+          var form = document.getElementById("dtc-form");
+          if (input) input.value = "P0300";
+          if (rpm) rpm.value = "750";
+          if (stft) stft.value = "3.5";
+          if (ltft) ltft.value = "18.5";
+          if (ect) ect.value = "195";
+          if (volt) volt.value = "13.8";
+          if (form) {
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event("submit"));
+          }
+        }, 150);
+      } else if (demoType === "elec_battery") {
+        navigateToView("studio", "tab-electrical");
+        setTimeout(function() {
+          var v = document.getElementById("resting-voltage-slider");
+          var vText = document.getElementById("resting-voltage-val");
+          var c = document.getElementById("cranking-voltage-input");
+          var a = document.getElementById("alternator-voltage-input");
+          var p = document.getElementById("parasitic-draw-input");
+          var b = document.getElementById("battery-age-input");
+          var form = document.getElementById("electrical-form");
+          if (v) v.value = "10.2";
+          if (vText) vText.innerText = "10.2 V";
+          if (c) c.value = "7.6";
+          if (a) a.value = "13.2";
+          if (p) p.value = "120";
+          if (b) b.value = "4.5";
+          if (form) {
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event("submit"));
+          }
+        }, 150);
+      } else if (demoType === "thermal_overheat") {
+        navigateToView("studio", "tab-thermal");
+        setTimeout(function() {
+          var cond = document.getElementById("thermal-condition");
+          var level = document.getElementById("thermal-coolant-level");
+          var fan = document.getElementById("thermal-fan-status");
+          var heater = document.getElementById("thermal-heater-output");
+          var hose = document.getElementById("thermal-hose-temp");
+          var smoke = document.getElementById("thermal-smoke-oil");
+          var form = document.getElementById("thermal-form");
+          if (cond) cond.value = "idle_traffic";
+          if (level) level.value = "normal";
+          if (fan) fan.value = "no_not_spinning";
+          if (heater) heater.value = "hot";
+          if (hose) hose.value = "upper_scalding_lower_cold";
+          if (smoke) smoke.checked = false;
+          if (form) {
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event("submit"));
+          }
+        }, 150);
+      } else if (demoType === "acoustic_whine") {
+        navigateToView("studio", "tab-acoustic");
+        setTimeout(function() {
+          var type = document.getElementById("sound-type");
+          var loc = document.getElementById("sound-location");
+          var cond = document.getElementById("sound-condition");
+          var rpm = document.getElementById("sound-rpm-dep");
+          var speed = document.getElementById("sound-speed-dep");
+          var form = document.getElementById("acoustic-form");
+          if (type) type.value = "whine_hum";
+          if (loc) loc.value = "engine_front_belt";
+          if (cond) cond.value = "accelerating";
+          if (rpm) rpm.checked = true;
+          if (speed) speed.checked = false;
+          if (form) {
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event("submit"));
+          }
+        }, 150);
+      }
+    }
+
+    window.navigateToView = navigateToView;
+    window.switchStudioTab = switchStudioTab;
+    window.runDemo = runDemo;
+  </script>
 </head>
 <body>
 
   <!-- Top Navigation Bar -->
   <header class="navbar">
-    <a href="/" class="brand">
+    <a href="#" class="brand" onclick="navigateToView('intro'); return false;">
       <div class="brand-icon">⚡</div>
       <div class="brand-text">
         <h1>AutoAssist AI</h1>
         <p>Intelligent Automotive Diagnostic & Service Platform</p>
       </div>
     </a>
+
+    <!-- Top View Switcher -->
+    <nav class="nav-links">
+      <button id="nav-btn-intro" class="nav-link active" onclick="navigateToView('intro')">
+        🏠 Home &amp; Overview
+      </button>
+      <button id="nav-btn-studio" class="nav-link" onclick="navigateToView('studio')">
+        ⚡ Diagnostic Studio
+      </button>
+    </nav>
 
     <div class="nav-actions">
       <div class="status-pill">
@@ -29,6 +198,224 @@
       </button>
     </div>
   </header>
+
+  <!-- ======================================================================
+       VIEW 1: Dedicated Cinematic Introductory Page (Forest Green & Sand Beige)
+       ====================================================================== -->
+  <div id="view-intro" class="view-section active">
+    <section id="cinematic-intro" class="cinematic-intro">
+      <canvas id="cinematic-canvas" class="cinematic-canvas"></canvas>
+      <div class="glow-orb orb-forest"></div>
+      <div class="glow-orb orb-sand"></div>
+      
+      <div class="intro-content">
+        <!-- HUD Top Tagline -->
+        <div class="intro-badge">
+          <span class="pulse-indicator"></span>
+          <span>NEXT-GEN VEHICLE TELEMETRY &bull; NEURAL RAG ASSISTANT</span>
+        </div>
+
+        <!-- Main Cinematic Title -->
+        <h1 class="intro-title">
+          AUTOASSIST <span class="highlight-sand">AI</span>
+        </h1>
+        <p class="intro-subtitle">
+          Intelligent Automotive Diagnostic Studio powered by sub-100ms ONNX neural vector retrieval, 
+          OEM service manuals, and multi-subsystem engineering analyzers.
+        </p>
+
+        <!-- Live Performance Metrics Ticker -->
+        <div class="intro-telemetry-bar">
+          <div class="telemetry-item">
+            <span class="telemetry-label">Neural Embeddings</span>
+            <span class="telemetry-value">all-MiniLM-L6-v2 (384d)</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Retrieval Benchmark</span>
+            <span class="telemetry-value">100% Top-1 Precision</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Indexed Manuals</span>
+            <span class="telemetry-value">9 OEM Service Guides</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Subsystem Analyzers</span>
+            <span class="telemetry-value">8 Online Subsystems</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Avg. Latency</span>
+            <span class="telemetry-value">&lt; 100ms Inference</span>
+          </div>
+        </div>
+
+        <!-- Primary CTA Actions -->
+        <div class="intro-actions">
+          <button id="enter-studio-btn" class="btn-cinematic-primary" onclick="navigateToView('studio')">
+            <span>Launch Diagnostic Studio</span>
+            <span class="btn-arrow">&rarr;</span>
+          </button>
+          <button id="quick-wizard-btn" class="btn-cinematic-secondary" onclick="navigateToView('studio', 'tab-wizard')">
+            <span>🧙 Start Guided Wizard</span>
+          </button>
+          <button id="quick-rag-btn" class="btn-cinematic-secondary" onclick="navigateToView('studio', 'tab-rag')">
+            <span>🔍 Manuals RAG Search</span>
+          </button>
+        </div>
+
+        <!-- Quick 1-Click Interactive Diagnostic Demos -->
+        <div class="intro-demos-section">
+          <div class="intro-demos-title">⚡ Try Quick 1-Click Diagnostic Demos</div>
+          <p class="intro-demos-subtitle">Test real automotive failure scenarios instantly — clicks directly launch and compute live diagnostics:</p>
+          <div class="demo-buttons-grid">
+            <button type="button" class="demo-btn" onclick="runDemo('dtc_p0300')">
+              <span class="demo-icon">⚡</span>
+              <span class="demo-text"><strong>OBD-II Code P0300</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">Random / Multiple Cylinder Misfire</span></span>
+              <span class="demo-tag">Run Scan &rarr;</span>
+            </button>
+            <button type="button" class="demo-btn" onclick="runDemo('elec_battery')">
+              <span class="demo-icon">🔋</span>
+              <span class="demo-text"><strong>10.2V Dead Battery</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">Low resting voltage / Starter drop</span></span>
+              <span class="demo-tag">Run Multimeter &rarr;</span>
+            </button>
+            <button type="button" class="demo-btn" onclick="runDemo('thermal_overheat')">
+              <span class="demo-icon">🌡️</span>
+              <span class="demo-text"><strong>225°F Overheating</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">Stuck thermostat / Radiator delta-T</span></span>
+              <span class="demo-tag">Run Thermal &rarr;</span>
+            </button>
+            <button type="button" class="demo-btn" onclick="runDemo('acoustic_whine')">
+              <span class="demo-icon">🔊</span>
+              <span class="demo-text"><strong>1,200 Hz Noise</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">High-pitched alternator diode whine</span></span>
+              <span class="demo-tag">Run NVH &rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Step Engineering Diagnostic Pipeline -->
+        <div class="intro-how-it-works">
+          <div class="how-heading">ENGINEERING DIAGNOSTIC PIPELINE</div>
+          <div class="how-steps-grid">
+            <div class="how-step-card">
+              <div class="step-badge">STAGE 01 &bull; INGESTION</div>
+              <h3>Telemetry & Symptom Capture</h3>
+              <p>Scan OBD-II trouble codes (DTCs), multimeter electrical levels, thermodynamic delta-T, or acoustic vibration signatures.</p>
+            </div>
+            <div class="how-step-card">
+              <div class="step-badge">STAGE 02 &bull; INFERENCE</div>
+              <h3>Neural RAG & Physics Engine</h3>
+              <p>Dense 384-dimensional ONNX vector retrieval across 9 factory OEM manuals paired with deterministic mechanical physics models.</p>
+            </div>
+            <div class="how-step-card">
+              <div class="step-badge">STAGE 03 &bull; ACTION</div>
+              <h3>Root Causes, Checklist & INR Pricing</h3>
+              <p>Ranked probabilities, step-by-step OEM repair checklist, required tools, and industry benchmark DIY vs Pro shop costs in ₹.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsystem Capabilities Grid -->
+        <div class="intro-features-heading">
+          <span>8 SPECIALIZED DIAGNOSTIC SUBSYSTEMS</span>
+        </div>
+        <div class="intro-grid">
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-dtc')">
+            <div class="card-icon">⚡</div>
+            <h3>OBD-II DTC Scanner</h3>
+            <p>Instant fault code translation, severity rating, root cause probability, and repair plans.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">ECU / PCM / TCM</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-dtc'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-electrical')">
+            <div class="card-icon">🔋</div>
+            <h3>Electrical Multimeter</h3>
+            <p>Resting battery voltage, starter crank drop, alternator diode ripple & parasitic draw analysis.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">12V / 48V Charging</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-electrical'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-acoustic')">
+            <div class="card-icon">🔊</div>
+            <h3>NVH Sound Identifier</h3>
+            <p>Spectral frequency matching for whines, knocks, clicks, squeals and wheel hub harmonics.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Acoustic Harmonics</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-acoustic'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-thermal')">
+            <div class="card-icon">🌡️</div>
+            <h3>Cooling & Thermal</h3>
+            <p>Head gasket pressure test, thermostat flow cycle, radiator delta-T, and fan duty cycle.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Thermodynamics</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-thermal'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-brake')">
+            <div class="card-icon">🛑</div>
+            <h3>Brake Safety & Wear</h3>
+            <p>Rotor runout DTV, caliper piston slide friction, brake fade coefficient & ABS valve bleed.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Hydraulics & Safety</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-brake'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-drivetrain')">
+            <div class="card-icon">⚙️</div>
+            <h3>Drivetrain & Transmission</h3>
+            <p>Clutch slip ratio, torque converter lockup, shudder, diff lash & shift solenoid response.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Powertrain Mechanical</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-drivetrain'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-emissions')">
+            <div class="card-icon">💨</div>
+            <h3>Fuel Trim & Emissions</h3>
+            <p>STFT/LTFT mixture calculation, MAF g/s correlation, O2 switching speed & EVAP leak tests.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">EPA / Euro-6 OBD</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-emissions'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+          <div class="intro-card" onclick="navigateToView('studio', 'tab-wizard')">
+            <div class="card-icon">🧙</div>
+            <h3>Guided Diagnostic Wizard</h3>
+            <p>Adaptive symptom trees that isolate complex multi-system vehicle faults step-by-step.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Interactive Triage</span>
+              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-wizard'); event.stopPropagation();">Launch &rarr;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom CTA Banner -->
+        <div class="intro-cta-banner">
+          <h2>Ready to Troubleshoot Your Vehicle?</h2>
+          <p>Access the full diagnostic studio, query vectorized service manuals, or execute specialized physics-based analyzers.</p>
+          <button type="button" class="btn-cinematic-primary" onclick="navigateToView('studio')">
+            <span>Enter Diagnostic Studio</span>
+            <span class="btn-arrow">&rarr;</span>
+          </button>
+        </div>
+
+        <div class="intro-footer-hint">
+          <span>Click any card, demo, or button above to start diagnosing immediately &bull; Switch between Overview and Studio anytime</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ======================================================================
+       VIEW 2: Dedicated Diagnostic Studio Workspace
+       ====================================================================== -->
+  <div id="view-studio" class="view-section">
 
   <!-- Vehicle Selection Bar -->
   <div class="vehicle-bar">
@@ -68,48 +455,48 @@
     <!-- Sidebar Tabs Navigation -->
     <aside class="sidebar">
       <div class="nav-section-title">Knowledge & Retrieval</div>
-      <button class="tab-btn active" data-tab="tab-rag">
+      <button type="button" class="tab-btn active" data-tab="tab-rag" onclick="switchStudioTab('tab-rag')">
         <span class="tab-icon">🔍</span>
         <span>Manuals RAG Search</span>
         <span class="tab-badge">Sub-100ms</span>
       </button>
 
       <div class="nav-section-title" style="margin-top: 0.5rem;">Diagnostic Analyzers</div>
-      <button class="tab-btn" data-tab="tab-dtc">
+      <button type="button" class="tab-btn" data-tab="tab-dtc" onclick="switchStudioTab('tab-dtc')">
         <span class="tab-icon">⚡</span>
         <span>OBD-II DTC Scanner</span>
       </button>
-      <button class="tab-btn" data-tab="tab-electrical">
+      <button type="button" class="tab-btn" data-tab="tab-electrical" onclick="switchStudioTab('tab-electrical')">
         <span class="tab-icon">🔋</span>
         <span>Electrical Multimeter</span>
       </button>
-      <button class="tab-btn" data-tab="tab-thermal">
+      <button type="button" class="tab-btn" data-tab="tab-thermal" onclick="switchStudioTab('tab-thermal')">
         <span class="tab-icon">🌡️</span>
         <span>Cooling & Overheating</span>
       </button>
-      <button class="tab-btn" data-tab="tab-acoustic">
+      <button type="button" class="tab-btn" data-tab="tab-acoustic" onclick="switchStudioTab('tab-acoustic')">
         <span class="tab-icon">🔊</span>
         <span>NVH Sound Identifier</span>
       </button>
-      <button class="tab-btn" data-tab="tab-brake">
+      <button type="button" class="tab-btn" data-tab="tab-brake" onclick="switchStudioTab('tab-brake')">
         <span class="tab-icon">🛑</span>
         <span>Braking Safety & Wear</span>
       </button>
-      <button class="tab-btn" data-tab="tab-drivetrain">
+      <button type="button" class="tab-btn" data-tab="tab-drivetrain" onclick="switchStudioTab('tab-drivetrain')">
         <span class="tab-icon">⚙️</span>
         <span>Transmission & Drivetrain</span>
       </button>
-      <button class="tab-btn" data-tab="tab-emissions">
+      <button type="button" class="tab-btn" data-tab="tab-emissions" onclick="switchStudioTab('tab-emissions')">
         <span class="tab-icon">💨</span>
         <span>Fuel Trim & Emissions</span>
       </button>
 
       <div class="nav-section-title" style="margin-top: 0.5rem;">Guided Workflow & Costs</div>
-      <button class="tab-btn" data-tab="tab-wizard">
+      <button type="button" class="tab-btn" data-tab="tab-wizard" onclick="switchStudioTab('tab-wizard')">
         <span class="tab-icon">🧙</span>
         <span>Guided Problem Wizard</span>
       </button>
-      <button class="tab-btn" data-tab="tab-pricing">
+      <button type="button" class="tab-btn" data-tab="tab-pricing" onclick="switchStudioTab('tab-pricing')">
         <span class="tab-icon">💰</span>
         <span>Repair Cost Benchmarks</span>
       </button>
@@ -707,6 +1094,7 @@
 
     </section>
   </main>
+  </div> <!-- /view-studio -->
 
   <!-- Work Order Printable Modal -->
   <div id="work-order-modal" class="modal-overlay">
@@ -716,6 +1104,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.js?v=2.6"></script>
 </body>
 </html>

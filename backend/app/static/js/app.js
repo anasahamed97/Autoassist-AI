@@ -22,6 +22,11 @@ const state = {
 
 // DOM Content Loaded
 document.addEventListener("DOMContentLoaded", () => {
+  try {
+    initCinematicIntro();
+  } catch (err) {
+    console.warn("Cinematic intro canvas initialization deferred/skipped:", err);
+  }
   initTabs();
   initTheme();
   initVehicleBar();
@@ -41,18 +46,24 @@ document.addEventListener("DOMContentLoaded", () => {
 // Tab Navigation
 function initTabs() {
   const tabBtns = document.querySelectorAll(".tab-btn");
-  const tabPanels = document.querySelectorAll(".tab-panel");
-
   tabBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const targetId = btn.dataset.tab;
-      tabBtns.forEach((b) => b.classList.remove("active"));
-      tabPanels.forEach((p) => p.classList.remove("active"));
-
-      btn.classList.add("active");
-      const targetPanel = document.getElementById(targetId);
-      if (targetPanel) {
-        targetPanel.classList.add("active");
+      if (typeof window.switchStudioTab === "function") {
+        window.switchStudioTab(targetId);
+      } else {
+        const tabPanels = document.querySelectorAll(".tab-panel");
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        tabPanels.forEach((p) => {
+          p.classList.remove("active");
+          p.style.display = "none";
+        });
+        btn.classList.add("active");
+        const targetPanel = document.getElementById(targetId);
+        if (targetPanel) {
+          targetPanel.classList.add("active");
+          targetPanel.style.display = "block";
+        }
       }
     });
   });
@@ -98,13 +109,53 @@ function initVehicleBar() {
   if (mileageInput) mileageInput.addEventListener("change", updateVehicle);
 }
 
+// Immediate Loading State Feedback for Result Box
+function showLoadingInResultBox(targetContainerId, title = "Analyzing Diagnostic Telemetry...") {
+  const container = document.getElementById(targetContainerId);
+  if (!container) return;
+  container.classList.add("visible");
+  container.style.display = "block";
+  container.innerHTML = `
+    <div style="padding: 2.25rem 1.5rem; text-align: center; color: var(--accent-cyan);">
+      <div class="status-dot" style="margin: 0 auto 0.85rem; width: 14px; height: 14px; background: var(--accent-cyan); box-shadow: 0 0 14px var(--accent-cyan);"></div>
+      <div style="font-weight: 700; font-size: 1.05rem; color: var(--accent-sand); letter-spacing: 0.3px;">${title}</div>
+      <div style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.45rem;">
+        Querying ONNX 384d semantic vectors across 9 OEM service manuals & calculating physical probability models...
+      </div>
+    </div>
+  `;
+  container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// Error Feedback for Result Box
+function renderErrorResult(errMessage, targetContainerId) {
+  const container = document.getElementById(targetContainerId);
+  if (!container) return;
+  container.classList.add("visible");
+  container.style.display = "block";
+  container.innerHTML = `
+    <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.12); border: 1px solid var(--accent-crimson); border-radius: var(--radius-md); color: #fca5a5;">
+      <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--accent-crimson);">⚠️ Diagnostic Computation Error</h3>
+      <p style="font-size: 0.85rem; line-height: 1.5;">${errMessage}</p>
+      <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.6rem;">Please check your input values and verify that the backend API is reachable.</p>
+    </div>
+  `;
+  container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 // Render Universal Diagnostic Result Box
 function renderDiagnosticResult(result, targetContainerId) {
   state.lastResult = result;
   const container = document.getElementById(targetContainerId);
   if (!container) return;
 
-  const isSafe = result.is_safe_to_drive;
+  if (!result || typeof result !== "object" || !result.subsystem || !result.primary_verdict) {
+    const detailMsg = (result && result.detail) ? result.detail : "Invalid or incomplete diagnostic verdict returned by backend.";
+    renderErrorResult(detailMsg, targetContainerId);
+    return;
+  }
+
+  const isSafe = !!result.is_safe_to_drive;
   const advisoryClass = isSafe ? "advisory-safe" : "advisory-danger";
   const advisoryIcon = isSafe ? "✅" : "⚠️";
 
@@ -249,6 +300,7 @@ function renderDiagnosticResult(result, targetContainerId) {
   `;
 
   container.classList.add("visible");
+  container.style.display = "block";
   container.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -335,7 +387,7 @@ function renderRAGSearchResults(data, container) {
         <div class="rag-chunk-card" style="border-left-width: 4px;">
           <div class="rag-chunk-header">
             <div>
-              <span style="background: rgba(0, 242, 254, 0.1); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">#${idx + 1}</span>
+              <span style="background: rgba(223, 202, 167, 0.15); color: var(--accent-cyan); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">#${idx + 1}</span>
               <strong>${item.document_title}</strong>
               <span style="color: var(--text-dim); font-size: 0.75rem;"> • ${item.section || "Technical Guide"} (Page ${item.page_number || 1})</span>
             </div>
@@ -362,7 +414,8 @@ function initDTCScanner() {
     btn.addEventListener("click", () => {
       if (codeInput) {
         codeInput.value = btn.dataset.code;
-        form.dispatchEvent(new Event("submit"));
+        if (form.requestSubmit) form.requestSubmit();
+        else form.dispatchEvent(new Event("submit"));
       }
     });
   });
@@ -373,6 +426,8 @@ function initDTCScanner() {
     e.preventDefault();
     const code = codeInput.value.trim();
     if (!code) return;
+
+    showLoadingInResultBox("dtc-result-box", `Analyzing Diagnostic Trouble Code ${code.toUpperCase()}...`);
 
     const payload = {
       code: code,
@@ -394,10 +449,14 @@ function initDTCScanner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "dtc-result-box");
     } catch (err) {
-      alert("DTC Analysis error: " + err.message);
+      renderErrorResult("DTC Analysis error: " + err.message, "dtc-result-box");
     }
   });
 }
@@ -418,6 +477,8 @@ function initElectricalAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("electrical-result-box", "Computing Electrical & Multimeter Health Verdict...");
+
     const payload = {
       resting_voltage: parseFloat(document.getElementById("resting-voltage-slider")?.value || "12.6"),
       cranking_voltage: parseFloat(document.getElementById("cranking-voltage-input")?.value || "10.2"),
@@ -433,10 +494,14 @@ function initElectricalAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "electrical-result-box");
     } catch (err) {
-      alert("Electrical Analysis error: " + err.message);
+      renderErrorResult("Electrical Analysis error: " + err.message, "electrical-result-box");
     }
   });
 }
@@ -448,6 +513,8 @@ function initThermalAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("thermal-result-box", "Simulating Cooling System Thermodynamics & Head Gasket Integrity...");
+
     const payload = {
       driving_condition: document.getElementById("thermal-condition")?.value || "idle_traffic",
       coolant_level: document.getElementById("thermal-coolant-level")?.value || "normal",
@@ -464,10 +531,14 @@ function initThermalAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "thermal-result-box");
     } catch (err) {
-      alert("Thermal Analysis error: " + err.message);
+      renderErrorResult("Thermal Analysis error: " + err.message, "thermal-result-box");
     }
   });
 }
@@ -479,6 +550,8 @@ function initAcousticAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("acoustic-result-box", "Matching NVH Harmonic Spectrum & Component Resonances...");
+
     const payload = {
       sound_type: document.getElementById("sound-type")?.value || "squeal_chirp",
       location: document.getElementById("sound-location")?.value || "front_wheel_brakes",
@@ -494,10 +567,14 @@ function initAcousticAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "acoustic-result-box");
     } catch (err) {
-      alert("Acoustic Analysis error: " + err.message);
+      renderErrorResult("Acoustic Analysis error: " + err.message, "acoustic-result-box");
     }
   });
 }
@@ -520,6 +597,8 @@ function initBrakeAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("brake-result-box", "Evaluating Hydraulic Brake Safety & Wear Thresholds...");
+
     const payload = {
       pad_thickness_mm: parseFloat(document.getElementById("brake-pad-slider")?.value || "3.0"),
       pedal_feel: document.getElementById("brake-pedal-feel")?.value || "normal_firm",
@@ -535,10 +614,14 @@ function initBrakeAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "brake-result-box");
     } catch (err) {
-      alert("Brake Analysis error: " + err.message);
+      renderErrorResult("Brake Analysis error: " + err.message, "brake-result-box");
     }
   });
 }
@@ -550,6 +633,8 @@ function initDrivetrainAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("drivetrain-result-box", "Analyzing Transmission Hydraulics & Torque Slip Ratios...");
+
     const payload = {
       transmission_type: document.getElementById("trans-type")?.value || "automatic_torque_converter",
       symptom: document.getElementById("trans-symptom")?.value || "slipping_rpm_flares",
@@ -564,10 +649,14 @@ function initDrivetrainAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "drivetrain-result-box");
     } catch (err) {
-      alert("Drivetrain Analysis error: " + err.message);
+      renderErrorResult("Drivetrain Analysis error: " + err.message, "drivetrain-result-box");
     }
   });
 }
@@ -579,6 +668,8 @@ function initEmissionsAnalyzer() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoadingInResultBox("emissions-result-box", "Calculating Stoichiometric Mixture Imbalances & Vacuum Leaks...");
+
     const payload = {
       stft_idle_pct: parseFloat(document.getElementById("em-stft-idle")?.value || "0.0"),
       ltft_idle_pct: parseFloat(document.getElementById("em-ltft-idle")?.value || "0.0"),
@@ -595,10 +686,14 @@ function initEmissionsAnalyzer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+      }
       const data = await resp.json();
       renderDiagnosticResult(data, "emissions-result-box");
     } catch (err) {
-      alert("Emissions Analysis error: " + err.message);
+      renderErrorResult("Emissions Analysis error: " + err.message, "emissions-result-box");
     }
   });
 }
@@ -690,6 +785,8 @@ async function finalizeWizard() {
     `;
   }
 
+  showLoadingInResultBox("wizard-result-box", "Synthesizing Interactive Troubleshooting Decisions...");
+
   try {
     const resp = await fetch("/api/analyzers/wizard/step", {
       method: "POST",
@@ -700,6 +797,10 @@ async function finalizeWizard() {
         include_rag_chunks: true,
       }),
     });
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
+    }
     const data = await resp.json();
     renderDiagnosticResult(data, "wizard-result-box");
 
@@ -714,7 +815,7 @@ async function finalizeWizard() {
       `;
     }
   } catch (err) {
-    alert("Wizard evaluation failed: " + err.message);
+    renderErrorResult("Wizard evaluation failed: " + err.message, "wizard-result-box");
   }
 }
 
@@ -821,7 +922,7 @@ window.openWorkOrderModal = function () {
     <div style="margin-bottom: 1.25rem;">
       <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">1. Diagnostic Verdict</h3>
       <p style="font-size: 1.15rem; font-weight: 700; margin: 0.35rem 0;">${res.primary_verdict}</p>
-      <div style="font-size: 0.85rem; padding: 0.5rem 0.75rem; background: rgba(0, 242, 254, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
+      <div style="font-size: 0.85rem; padding: 0.5rem 0.75rem; background: rgba(223, 202, 167, 0.1); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
         <strong>Safety Advisory:</strong> ${res.driving_advisory}
       </div>
     </div>
@@ -870,3 +971,281 @@ window.openWorkOrderModal = function () {
 
   modal.classList.add("open");
 };
+
+// ==========================================================================
+// View Routing & Cinematic Intro Controller (Forest Green & Sand Beige)
+// ==========================================================================
+
+// Global Studio Tab Switcher: directly activates both the tab button and the panel
+window.switchStudioTab = function(tabId) {
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+
+  tabBtns.forEach((b) => {
+    if (b.getAttribute("data-tab") === tabId) {
+      b.classList.add("active");
+    } else {
+      b.classList.remove("active");
+    }
+  });
+
+  tabPanels.forEach((p) => {
+    if (p.id === tabId) {
+      p.classList.add("active");
+      p.style.display = "block";
+    } else {
+      p.classList.remove("active");
+      p.style.display = "none";
+    }
+  });
+};
+
+// Global View Switcher: easily switch between 'intro' and 'studio'
+window.navigateToView = function(viewName, targetTabId = null) {
+  const viewIntro = document.getElementById("view-intro");
+  const viewStudio = document.getElementById("view-studio");
+  const navBtnIntro = document.getElementById("nav-btn-intro");
+  const navBtnStudio = document.getElementById("nav-btn-studio");
+
+  if (viewName === "studio") {
+    if (viewIntro) {
+      viewIntro.classList.remove("active");
+      viewIntro.style.display = "none";
+    }
+    if (viewStudio) {
+      viewStudio.classList.add("active");
+      viewStudio.style.display = "block";
+    }
+    if (navBtnIntro) navBtnIntro.classList.remove("active");
+    if (navBtnStudio) navBtnStudio.classList.add("active");
+
+    if (targetTabId) {
+      window.switchStudioTab(targetTabId);
+    } else {
+      const activeTab = document.querySelector(".tab-btn.active");
+      if (activeTab && activeTab.getAttribute("data-tab")) {
+        window.switchStudioTab(activeTab.getAttribute("data-tab"));
+      } else {
+        window.switchStudioTab("tab-rag");
+      }
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    // Navigate to intro
+    if (viewStudio) {
+      viewStudio.classList.remove("active");
+      viewStudio.style.display = "none";
+    }
+    if (viewIntro) {
+      viewIntro.classList.add("active");
+      viewIntro.style.display = "block";
+    }
+    if (navBtnStudio) navBtnStudio.classList.remove("active");
+    if (navBtnIntro) navBtnIntro.classList.add("active");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+
+// Global Quick 1-Click Interactive Diagnostic Demo Runner
+window.runDemo = function(demoType) {
+  if (demoType === "dtc_p0300") {
+    window.navigateToView("studio", "tab-dtc");
+    setTimeout(() => {
+      const dtcInput = document.getElementById("dtc-code-input");
+      const rpm = document.getElementById("ff-rpm");
+      const stft = document.getElementById("ff-stft");
+      const ltft = document.getElementById("ff-ltft");
+      const ect = document.getElementById("ff-ect");
+      const volt = document.getElementById("ff-volt");
+      const dtcForm = document.getElementById("dtc-form");
+      if (dtcInput) dtcInput.value = "P0300";
+      if (rpm) rpm.value = "750";
+      if (stft) stft.value = "3.5";
+      if (ltft) ltft.value = "18.5";
+      if (ect) ect.value = "195";
+      if (volt) volt.value = "13.8";
+      if (dtcForm) {
+        if (dtcForm.requestSubmit) dtcForm.requestSubmit();
+        else dtcForm.dispatchEvent(new Event("submit"));
+      }
+    }, 150);
+  } else if (demoType === "elec_battery") {
+    window.navigateToView("studio", "tab-electrical");
+    setTimeout(() => {
+      const voltSlider = document.getElementById("resting-voltage-slider");
+      const voltVal = document.getElementById("resting-voltage-val");
+      const crankInput = document.getElementById("cranking-voltage-input");
+      const altInput = document.getElementById("alternator-voltage-input");
+      const drawInput = document.getElementById("parasitic-draw-input");
+      const ageInput = document.getElementById("battery-age-input");
+      const elForm = document.getElementById("electrical-form");
+      if (voltSlider) voltSlider.value = "10.2";
+      if (voltVal) voltVal.innerText = "10.2 V";
+      if (crankInput) crankInput.value = "7.6";
+      if (altInput) altInput.value = "13.2";
+      if (drawInput) drawInput.value = "120";
+      if (ageInput) ageInput.value = "4.5";
+      if (elForm) {
+        if (elForm.requestSubmit) elForm.requestSubmit();
+        else elForm.dispatchEvent(new Event("submit"));
+      }
+    }, 150);
+  } else if (demoType === "thermal_overheat") {
+    window.navigateToView("studio", "tab-thermal");
+    setTimeout(() => {
+      const cond = document.getElementById("thermal-condition");
+      const level = document.getElementById("thermal-coolant-level");
+      const fan = document.getElementById("thermal-fan-status");
+      const heater = document.getElementById("thermal-heater-output");
+      const hose = document.getElementById("thermal-hose-temp");
+      const smoke = document.getElementById("thermal-smoke-oil");
+      const thForm = document.getElementById("thermal-form");
+      if (cond) cond.value = "idle_traffic";
+      if (level) level.value = "normal";
+      if (fan) fan.value = "no_not_spinning";
+      if (heater) heater.value = "hot";
+      if (hose) hose.value = "upper_scalding_lower_cold";
+      if (smoke) smoke.checked = false;
+      if (thForm) {
+        if (thForm.requestSubmit) thForm.requestSubmit();
+        else thForm.dispatchEvent(new Event("submit"));
+      }
+    }, 150);
+  } else if (demoType === "acoustic_whine") {
+    window.navigateToView("studio", "tab-acoustic");
+    setTimeout(() => {
+      const soundType = document.getElementById("sound-type");
+      const location = document.getElementById("sound-location");
+      const condition = document.getElementById("sound-condition");
+      const rpmDep = document.getElementById("sound-rpm-dep");
+      const speedDep = document.getElementById("sound-speed-dep");
+      const acForm = document.getElementById("acoustic-form");
+      if (soundType) soundType.value = "whine_hum";
+      if (location) location.value = "engine_front_belt";
+      if (condition) condition.value = "accelerating";
+      if (rpmDep) rpmDep.checked = true;
+      if (speedDep) speedDep.checked = false;
+      if (acForm) {
+        if (acForm.requestSubmit) acForm.requestSubmit();
+        else acForm.dispatchEvent(new Event("submit"));
+      }
+    }, 150);
+  }
+};
+
+function initCinematicIntro() {
+  const intro = document.getElementById("cinematic-intro");
+  const canvas = document.getElementById("cinematic-canvas");
+
+  // Telemetry Radar Canvas Animation
+  if (!canvas || !intro) return;
+  const ctx = canvas.getContext("2d");
+  let width = (canvas.width = intro.offsetWidth || window.innerWidth);
+  let height = (canvas.height = intro.offsetHeight || 700);
+
+  let mouse = { x: width / 2, y: height / 2, active: false };
+
+  window.addEventListener("resize", () => {
+    const viewIntro = document.getElementById("view-intro");
+    if (viewIntro && viewIntro.classList.contains("active")) {
+      width = canvas.width = intro.offsetWidth || window.innerWidth;
+      height = canvas.height = intro.offsetHeight || 700;
+    }
+  });
+
+  intro.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+  });
+
+  intro.addEventListener("mouseleave", () => {
+    mouse.active = false;
+  });
+
+  const nodeCount = Math.min(50, Math.max(25, Math.floor((width * height) / 20000)));
+  const nodes = [];
+  const palette = [
+    { color: "rgba(223, 202, 167, 0.75)", radius: 2.2 }, // Sand Beige
+    { color: "rgba(82, 183, 136, 0.7)", radius: 2.0 },  // Forest Emerald
+    { color: "rgba(245, 236, 224, 0.8)", radius: 1.8 }, // Pale Sand
+    { color: "rgba(45, 106, 79, 0.65)", radius: 2.4 },  // Pine Green
+  ];
+
+  for (let i = 0; i < nodeCount; i++) {
+    const p = palette[Math.floor(Math.random() * palette.length)];
+    nodes.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      radius: p.radius,
+      color: p.color,
+    });
+  }
+
+  let scanlineY = 0;
+
+  function render() {
+    const viewIntro = document.getElementById("view-intro");
+    if (!viewIntro || !viewIntro.classList.contains("active")) {
+      requestAnimationFrame(render);
+      return;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Subtle Automotive Radar Scanline Sweep
+    scanlineY = (scanlineY + 1.2) % height;
+    const scanGradient = ctx.createLinearGradient(0, scanlineY - 35, 0, scanlineY + 35);
+    scanGradient.addColorStop(0, "rgba(82, 183, 136, 0)");
+    scanGradient.addColorStop(0.5, "rgba(223, 202, 167, 0.08)");
+    scanGradient.addColorStop(1, "rgba(82, 183, 136, 0)");
+    ctx.fillStyle = scanGradient;
+    ctx.fillRect(0, scanlineY - 35, width, 70);
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.x += n.vx;
+      n.y += n.vy;
+
+      if (n.x < 0 || n.x > width) n.vx *= -1;
+      if (n.y < 0 || n.y > height) n.vy *= -1;
+
+      if (mouse.active) {
+        const dx = mouse.x - n.x;
+        const dy = mouse.y - n.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 130) {
+          n.x += dx * 0.012;
+          n.y += dy * 0.012;
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      ctx.fillStyle = n.color;
+      ctx.fill();
+
+      for (let j = i + 1; j < nodes.length; j++) {
+        const n2 = nodes[j];
+        const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
+        if (dist < 110) {
+          const alpha = (1 - dist / 110) * 0.22;
+          ctx.beginPath();
+          ctx.moveTo(n.x, n.y);
+          ctx.lineTo(n2.x, n2.y);
+          ctx.strokeStyle = `rgba(223, 202, 167, ${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+}
