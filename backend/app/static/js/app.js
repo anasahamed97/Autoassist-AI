@@ -1,17 +1,36 @@
 /**
- * AutoAssist AI - Client Application Logic
- * Powers RAG Semantic Search, Dedicated Problem Analyzers, and Guided Diagnostic Wizard.
+ * AutoAssist AI - Complete Automotive Diagnostic & Service Platform Client Logic
+ * Integrates:
+ * 1. Multilingual Support (en, hi, kn, ar, ur) + RTL
+ * 2. Voice Input (Speech-to-Text) & Voice Output (Text-to-Speech)
+ * 3. Intelligent Manual Search with Dual-View (Technical vs Simple Words) + Ask Your Mechanic
+ * 4. AI Repair Cost Estimator in INR (₹)
+ * 5. Mechanic Quotation Checker with Verified Benchmarks
+ * 6. Vehicle Profile Management (CRUD + Active Default)
+ * 7. Problem Severity Assessment (LOW, MODERATE, CRITICAL)
+ * 8. Preventive Maintenance Tracker
+ * 9. All 8 Specialized Diagnostic Analyzers & 1-Click Simulations
  */
 
-// Global State
+// ==========================================================================
+// Global Application State
+// ==========================================================================
 const state = {
-  currentVehicle: {
+  activeSection: "dashboard",
+  manualViewMode: "simple", // "simple" or "technical"
+  activeVehicle: {
+    id: "default_civic",
     make: "Honda",
     model: "Civic",
     year: 2022,
-    mileage: 45000,
+    fuel_type: "Petrol",
+    mileage_km: 45000,
+    city: "Bengaluru",
+    is_default: true,
   },
+  vehiclesList: [],
   lastResult: null,
+  manualResult: null,
   wizard: {
     domain: null,
     questions: [],
@@ -20,17 +39,23 @@ const state = {
   },
 };
 
-// DOM Content Loaded
+// ==========================================================================
+// Initialization on DOM Ready
+// ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-  try {
-    initCinematicIntro();
-  } catch (err) {
-    console.warn("Cinematic intro canvas initialization deferred/skipped:", err);
-  }
-  initTabs();
+  initI18nAndLanguage();
+  initVoiceControls();
+  initNavigation();
   initTheme();
-  initVehicleBar();
-  initRAGSearch();
+  initVehiclesModule();
+  initMaintenanceModule();
+  initAssistantChat();
+  initManualsSearch();
+  initCostEstimator();
+  initQuotationChecker();
+  initSettingsPanel();
+
+  // Initialize all 8 specialized diagnostic analyzers
   initDTCScanner();
   initElectricalAnalyzer();
   initThermalAnalyzer();
@@ -39,37 +64,106 @@ document.addEventListener("DOMContentLoaded", () => {
   initDrivetrainAnalyzer();
   initEmissionsAnalyzer();
   initWizard();
-  loadPriceGuide();
   initWorkOrderModal();
+
+  // Initial load
+  loadVehicles();
+  loadMaintenanceOverview();
 });
 
-// Tab Navigation
-function initTabs() {
-  const tabBtns = document.querySelectorAll(".tab-btn");
-  tabBtns.forEach((btn) => {
+// ==========================================================================
+// 1. Navigation Between 8 Primary Sections
+// ==========================================================================
+function initNavigation() {
+  const navBtns = document.querySelectorAll("#main-nav-links .nav-link");
+  navBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const targetId = btn.dataset.tab;
-      if (typeof window.switchStudioTab === "function") {
-        window.switchStudioTab(targetId);
-      } else {
-        const tabPanels = document.querySelectorAll(".tab-panel");
-        tabBtns.forEach((b) => b.classList.remove("active"));
-        tabPanels.forEach((p) => {
-          p.classList.remove("active");
-          p.style.display = "none";
-        });
-        btn.classList.add("active");
-        const targetPanel = document.getElementById(targetId);
-        if (targetPanel) {
-          targetPanel.classList.add("active");
-          targetPanel.style.display = "block";
-        }
-      }
+      const targetSec = btn.dataset.section;
+      if (targetSec) navigateToSection(targetSec);
     });
   });
 }
 
-// Dark / Light Theme Toggle
+window.navigateToSection = function (sectionId) {
+  state.activeSection = sectionId;
+
+  // Toggle active class on nav buttons
+  const navBtns = document.querySelectorAll("#main-nav-links .nav-link");
+  navBtns.forEach((b) => {
+    if (b.dataset.section === sectionId) b.classList.add("active");
+    else b.classList.remove("active");
+  });
+
+  // Toggle view sections
+  const sections = document.querySelectorAll(".view-section");
+  sections.forEach((sec) => {
+    if (sec.id === `view-${sectionId}`) {
+      sec.classList.add("active");
+      sec.style.display = "block";
+    } else {
+      sec.classList.remove("active");
+      sec.style.display = "none";
+    }
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Refresh relevant data when entering view
+  if (sectionId === "vehicles") loadVehicles();
+  if (sectionId === "maintenance") loadMaintenanceOverview();
+};
+
+// Sub-Tab Switcher for AI Assistant's 8 Diagnostic Analyzers
+window.switchStudioTab = function (tabId) {
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+
+  tabBtns.forEach((b) => {
+    if (b.getAttribute("data-tab") === tabId) b.classList.add("active");
+    else b.classList.remove("active");
+  });
+
+  tabPanels.forEach((p) => {
+    if (p.id === tabId) {
+      p.classList.add("active");
+      p.style.display = "block";
+    } else {
+      p.classList.remove("active");
+      p.style.display = "none";
+    }
+  });
+};
+
+// ==========================================================================
+// 2. Multilingual (i18n) Engine & Theme
+// ==========================================================================
+function initI18nAndLanguage() {
+  const topLangSelect = document.getElementById("language-selector");
+  const settingsLangSelect = document.getElementById("settings-lang-select");
+
+  const syncLang = (langCode) => {
+    if (window.i18n) {
+      window.i18n.setLanguage(langCode);
+    }
+    if (topLangSelect) topLangSelect.value = langCode;
+    if (settingsLangSelect) settingsLangSelect.value = langCode;
+    if (window.voiceManager) {
+      window.voiceManager.updateLanguage(langCode);
+    }
+  };
+
+  if (topLangSelect) {
+    topLangSelect.addEventListener("change", (e) => syncLang(e.target.value));
+  }
+  if (settingsLangSelect) {
+    settingsLangSelect.addEventListener("change", (e) => syncLang(e.target.value));
+  }
+
+  // Load saved language
+  const savedLang = localStorage.getItem("autoassist_lang") || "en";
+  syncLang(savedLang);
+}
+
 function initTheme() {
   const themeBtn = document.getElementById("theme-toggle-btn");
   if (!themeBtn) return;
@@ -87,29 +181,1164 @@ function initTheme() {
   });
 }
 
-// Vehicle Selection State
-function initVehicleBar() {
-  const makeSel = document.getElementById("vehicle-make");
-  const modelSel = document.getElementById("vehicle-model");
-  const yearSel = document.getElementById("vehicle-year");
-  const mileageInput = document.getElementById("vehicle-mileage");
-
-  function updateVehicle() {
-    state.currentVehicle = {
-      make: makeSel ? makeSel.value : "Generic",
-      model: modelSel ? modelSel.value : "Generic",
-      year: yearSel ? parseInt(yearSel.value, 10) : 2022,
-      mileage: mileageInput ? parseInt(mileageInput.value, 10) : 45000,
+// ==========================================================================
+// 3. Voice Controls (Speech-to-Text & Text-to-Speech)
+// ==========================================================================
+function initVoiceControls() {
+  // Global Voice Output Toggle in Header
+  const voiceToggleBtn = document.getElementById("header-voice-toggle");
+  if (voiceToggleBtn && window.voiceManager) {
+    const updateVoiceBtn = () => {
+      const enabled = window.voiceManager.voiceOutputEnabled;
+      voiceToggleBtn.innerHTML = enabled ? "🔊 Voice ON" : "🔇 Voice OFF";
+      voiceToggleBtn.style.opacity = enabled ? "1" : "0.6";
     };
+    updateVoiceBtn();
+
+    voiceToggleBtn.addEventListener("click", () => {
+      const current = window.voiceManager.voiceOutputEnabled;
+      window.voiceManager.setVoiceOutputEnabled(!current);
+      updateVoiceBtn();
+    });
   }
 
-  if (makeSel) makeSel.addEventListener("change", updateVehicle);
-  if (modelSel) modelSel.addEventListener("change", updateVehicle);
-  if (yearSel) yearSel.addEventListener("change", updateVehicle);
-  if (mileageInput) mileageInput.addEventListener("change", updateVehicle);
+  // Wire Microphone Buttons
+  setupMicButton("assistant-mic-btn", "assistant-input");
+  setupMicButton("manuals-mic-btn", "manual-search-input");
+  setupMicButton("est-mic-btn", "est-query-input");
 }
 
-// Immediate Loading State Feedback for Result Box
+function setupMicButton(btnId, targetInputId) {
+  const btn = document.getElementById(btnId);
+  const input = document.getElementById(targetInputId);
+  if (!btn || !input) return;
+
+  btn.addEventListener("click", () => {
+    if (!window.voiceManager) {
+      alert("Voice engine not initialized.");
+      return;
+    }
+
+    if (window.voiceManager.isRecording) {
+      window.voiceManager.stopListening();
+      btn.classList.remove("recording");
+      btn.innerHTML = "🎤";
+    } else {
+      window.voiceManager.startListening(input, (isRec, status) => {
+        if (isRec) {
+          btn.classList.add("recording");
+          btn.innerHTML = "⏹️";
+        } else {
+          btn.classList.remove("recording");
+          btn.innerHTML = "🎤";
+        }
+      });
+    }
+  });
+}
+
+function setupVoicePlayerBar(barId, statusId, playId, pauseId, stopId, getTextToSpeak) {
+  const bar = document.getElementById(barId);
+  const statusElem = document.getElementById(statusId);
+  const playBtn = document.getElementById(playId);
+  const pauseBtn = document.getElementById(pauseId);
+  const stopBtn = document.getElementById(stopId);
+
+  if (!bar) return;
+
+  if (playBtn) {
+    playBtn.addEventListener("click", () => {
+      if (!window.voiceManager) return;
+      if (window.voiceManager.isPaused) {
+        window.voiceManager.resume();
+        if (statusElem) statusElem.innerText = "Speaking explanation...";
+      } else {
+        const text = getTextToSpeak();
+        if (text) {
+          window.voiceManager.speak(text, (state) => {
+            if (statusElem) {
+              if (state === "start") statusElem.innerText = "Speaking explanation...";
+              else if (state === "end") statusElem.innerText = "Playback completed";
+              else if (state === "pause") statusElem.innerText = "Playback paused";
+              else if (state === "resume") statusElem.innerText = "Speaking explanation...";
+            }
+          });
+        }
+      }
+    });
+  }
+
+  if (pauseBtn) {
+    pauseBtn.addEventListener("click", () => {
+      if (window.voiceManager) {
+        window.voiceManager.pause();
+        if (statusElem) statusElem.innerText = "Playback paused";
+      }
+    });
+  }
+
+  if (stopBtn) {
+    stopBtn.addEventListener("click", () => {
+      if (window.voiceManager) {
+        window.voiceManager.stopSpeaking();
+        if (statusElem) statusElem.innerText = "Playback stopped";
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// 4. Vehicle Profile Management (/api/vehicles)
+// ==========================================================================
+function initVehiclesModule() {
+  const addBtn = document.getElementById("add-vehicle-btn");
+  const modal = document.getElementById("vehicle-modal");
+  const closeBtn = document.getElementById("vehicle-modal-close");
+  const form = document.getElementById("vehicle-form");
+
+  if (addBtn && modal) {
+    addBtn.addEventListener("click", () => {
+      document.getElementById("vehicle-modal-title").innerText = "Add Vehicle Profile";
+      document.getElementById("veh-form-id").value = "";
+      document.getElementById("veh-form-make").value = "";
+      document.getElementById("veh-form-model").value = "";
+      document.getElementById("veh-form-year").value = "2022";
+      document.getElementById("veh-form-mileage").value = "45000";
+      document.getElementById("veh-form-city").value = "Bengaluru";
+      document.getElementById("veh-form-default").checked = true;
+      modal.classList.add("open");
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener("click", () => modal.classList.remove("open"));
+  }
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const vehId = document.getElementById("veh-form-id").value;
+      const payload = {
+        make: document.getElementById("veh-form-make").value.trim(),
+        model: document.getElementById("veh-form-model").value.trim(),
+        year: parseInt(document.getElementById("veh-form-year").value, 10),
+        fuel_type: document.getElementById("veh-form-fuel").value,
+        mileage_km: parseInt(document.getElementById("veh-form-mileage").value, 10),
+        city: document.getElementById("veh-form-city").value.trim() || "Bengaluru",
+        is_default: document.getElementById("veh-form-default").checked,
+      };
+
+      try {
+        let resp;
+        if (vehId) {
+          resp = await fetch(`/api/vehicles/${vehId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        } else {
+          resp = await fetch("/api/vehicles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        }
+
+        if (!resp.ok) throw new Error("Failed to save vehicle profile");
+        modal.classList.remove("open");
+        await loadVehicles();
+      } catch (err) {
+        alert("Error saving vehicle: " + err.message);
+      }
+    });
+  }
+}
+
+async function loadVehicles() {
+  try {
+    const resp = await fetch("/api/vehicles");
+    if (!resp.ok) return;
+    const list = await resp.json();
+    state.vehiclesList = list;
+
+    // Determine active default vehicle
+    const active = list.find((v) => v.is_default) || list[0];
+    if (active) {
+      state.activeVehicle = active;
+      updateActiveVehicleUI(active);
+    }
+
+    renderVehiclesGrid(list);
+  } catch (err) {
+    console.warn("Could not load vehicles:", err);
+  }
+}
+
+function updateActiveVehicleUI(v) {
+  const headerVeh = document.getElementById("header-vehicle-name");
+  const dashVeh = document.getElementById("dash-metric-vehicle");
+  const dashOdo = document.getElementById("dash-metric-odo");
+
+  if (headerVeh) headerVeh.innerText = `${v.make} ${v.model} (${v.year})`;
+  if (dashVeh) dashVeh.innerText = `${v.make} ${v.model}`;
+  if (dashOdo) dashOdo.innerText = `${(v.mileage_km || 45000).toLocaleString()} km • ${v.year} ${v.fuel_type || "Petrol"}`;
+
+  // Sync with Cost Estimator inputs
+  const estMake = document.getElementById("est-make");
+  const estModel = document.getElementById("est-model");
+  const estYear = document.getElementById("est-year");
+  const estCity = document.getElementById("est-city");
+  if (estMake && v.make) estMake.value = v.make;
+  if (estModel && v.model) estModel.value = v.model;
+  if (estYear && v.year) estYear.value = v.year;
+  if (estCity && v.city) estCity.value = v.city;
+}
+
+function renderVehiclesGrid(vehicles) {
+  const grid = document.getElementById("vehicles-grid");
+  if (!grid) return;
+
+  if (!vehicles || vehicles.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
+        No vehicle profiles added yet. Click "+ Add New Vehicle" above to register your car.
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = vehicles
+    .map(
+      (v) => `
+    <div class="vehicle-card ${v.is_default ? "is-default" : ""}">
+      ${v.is_default ? `<span class="vehicle-card-badge">★ Active Vehicle</span>` : ""}
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">
+        ${v.make} ${v.model}
+      </h3>
+      <div style="font-size: 0.82rem; color: var(--accent-cyan); margin-bottom: 0.75rem;">
+        ${v.year} &bull; ${v.fuel_type || "Petrol"} &bull; ${(v.mileage_km || 0).toLocaleString()} km
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 1.25rem;">
+        Location: <strong>${v.city || "Bengaluru"}</strong>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        ${
+          !v.is_default
+            ? `<button class="btn-icon" onclick="setActiveVehicle('${v.id}')" style="font-size: 0.75rem; color: var(--accent-cyan);">Set as Active</button>`
+            : ""
+        }
+        <button class="btn-icon" onclick="editVehicle('${v.id}')" style="font-size: 0.75rem;">Edit</button>
+        <button class="btn-icon" onclick="deleteVehicle('${v.id}')" style="font-size: 0.75rem; color: #fca5a5;">Delete</button>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+}
+
+window.setActiveVehicle = async function (vehId) {
+  try {
+    const resp = await fetch(`/api/vehicles/${vehId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_default: true }),
+    });
+    if (resp.ok) {
+      await loadVehicles();
+      loadMaintenanceOverview();
+    }
+  } catch (err) {
+    alert("Could not set active vehicle: " + err.message);
+  }
+};
+
+window.editVehicle = function (vehId) {
+  const v = state.vehiclesList.find((item) => item.id === vehId);
+  if (!v) return;
+
+  const modal = document.getElementById("vehicle-modal");
+  document.getElementById("vehicle-modal-title").innerText = "Edit Vehicle Profile";
+  document.getElementById("veh-form-id").value = v.id;
+  document.getElementById("veh-form-make").value = v.make;
+  document.getElementById("veh-form-model").value = v.model;
+  document.getElementById("veh-form-year").value = v.year;
+  document.getElementById("veh-form-fuel").value = v.fuel_type || "Petrol";
+  document.getElementById("veh-form-mileage").value = v.mileage_km;
+  document.getElementById("veh-form-city").value = v.city || "Bengaluru";
+  document.getElementById("veh-form-default").checked = !!v.is_default;
+  if (modal) modal.classList.add("open");
+};
+
+window.deleteVehicle = async function (vehId) {
+  if (!confirm("Are you sure you want to delete this vehicle profile?")) return;
+  try {
+    const resp = await fetch(`/api/vehicles/${vehId}`, { method: "DELETE" });
+    if (resp.ok) await loadVehicles();
+  } catch (err) {
+    alert("Could not delete vehicle: " + err.message);
+  }
+};
+
+// ==========================================================================
+// 5. Maintenance Tracker Module (/api/maintenance)
+// ==========================================================================
+function initMaintenanceModule() {}
+
+async function loadMaintenanceOverview() {
+  const tbody = document.getElementById("maintenance-tbody");
+  const summaryText = document.getElementById("maint-summary-text");
+  const dashCount = document.getElementById("dash-metric-maint-count");
+
+  try {
+    const v = state.activeVehicle;
+    const url = `/api/maintenance/overview?vehicle_id=${v.id || ""}&current_mileage=${v.mileage_km || 45000}`;
+    const resp = await fetch(url);
+    if (!resp.ok) return;
+
+    const data = await resp.json();
+    const items = data.records || data.items || [];
+
+    // Update alert counts
+    const overdueCount = items.filter((i) => i.status === "overdue").length;
+    const dueSoonCount = items.filter((i) => i.status === "due_soon").length;
+
+    if (summaryText) {
+      if (overdueCount > 0) {
+        summaryText.innerHTML = `<span style="color: #fca5a5;">${overdueCount} Overdue Service(s)</span>`;
+      } else if (dueSoonCount > 0) {
+        summaryText.innerHTML = `<span style="color: #fcd34d;">${dueSoonCount} Due Soon</span>`;
+      } else {
+        summaryText.innerHTML = `<span style="color: #6ee7b7;">All Systems Up-to-Date</span>`;
+      }
+    }
+
+    if (dashCount) {
+      if (overdueCount > 0) {
+        dashCount.innerText = `${overdueCount} Overdue`;
+        dashCount.style.color = "var(--accent-crimson)";
+      } else if (dueSoonCount > 0) {
+        dashCount.innerText = `${dueSoonCount} Due Soon`;
+        dashCount.style.color = "var(--accent-amber)";
+      } else {
+        dashCount.innerText = "Up-to-Date";
+        dashCount.style.color = "var(--accent-emerald)";
+      }
+    }
+
+    if (tbody) {
+      tbody.innerHTML = items
+        .map(
+          (item) => `
+        <tr>
+          <td style="font-weight: 700; color: var(--text-main);">
+            ${item.service_type || item.service_name || "Scheduled Maintenance"}
+            <div style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">${item.notes || ""}</div>
+          </td>
+          <td style="font-size: 0.78rem; color: var(--text-muted);">${item.interval_km ? `${item.interval_km.toLocaleString()} km` : ""}${item.interval_months ? ` / ${item.interval_months} mo` : ""}</td>
+          <td style="font-size: 0.78rem;">${item.last_service_date || item.last_performed_date || "Not recorded"}<br><span style="color: var(--text-dim);">${item.last_service_odometer ? `${item.last_service_odometer.toLocaleString()} km` : ""}</span></td>
+          <td style="font-size: 0.78rem; color: var(--accent-cyan); font-weight: 600;">${item.next_due_date || ""}<br><span>${item.next_due_odometer ? `${item.next_due_odometer.toLocaleString()} km` : ""}</span></td>
+          <td><span class="maint-status-pill ${item.status}">${item.status.replace("_", " ")}</span></td>
+          <td>
+            <button class="btn-icon" onclick="completeMaintenance('${item.id}', '${item.service_type || item.service_name}')" style="font-size: 0.72rem; color: var(--accent-emerald);">
+              ✓ Mark Done
+            </button>
+          </td>
+        </tr>
+      `
+        )
+        .join("");
+    }
+  } catch (err) {
+    console.warn("Could not load maintenance overview:", err);
+  }
+}
+
+window.completeMaintenance = async function (recordId, serviceName) {
+  const currentOdo = state.activeVehicle.mileage_km || 45000;
+  const odo = prompt(`Enter service odometer for "${serviceName}":`, currentOdo);
+  if (odo === null) return;
+
+  try {
+    const resp = await fetch(`/api/maintenance/records/${recordId}/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mileage: parseInt(odo, 10) || currentOdo,
+        notes: "Completed via AutoAssist AI web portal",
+      }),
+    });
+    if (resp.ok) {
+      await loadMaintenanceOverview();
+    }
+  } catch (err) {
+    alert("Could not mark maintenance complete: " + err.message);
+  }
+};
+
+// ==========================================================================
+// 6. AI Assistant & Severity Assessment (/api/severity/assess & /api/rag/explain)
+// ==========================================================================
+function initAssistantChat() {
+  const form = document.getElementById("assistant-chat-form");
+  const input = document.getElementById("assistant-input");
+  const chips = document.querySelectorAll(".assist-chip");
+  const severityContainer = document.getElementById("assistant-severity-container");
+  const resultContainer = document.getElementById("assistant-result-container");
+
+  chips.forEach((c) => {
+    c.addEventListener("click", () => {
+      if (input) {
+        input.value = c.dataset.q;
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    if (resultContainer) {
+      resultContainer.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: var(--accent-cyan);">
+          <div class="status-dot" style="margin: 0 auto 0.75rem; width: 12px; height: 12px;"></div>
+          Consulting 129 OEM service manual sections & calculating severity risk...
+        </div>
+      `;
+    }
+
+    try {
+      // 1. Run Severity Assessment in parallel with RAG explanation
+      const [sevResp, ragResp] = await Promise.all([
+        fetch("/api/severity/assess", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: query }),
+        }),
+        fetch("/api/rag/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: query,
+            top_k: 4,
+            language: (window.i18n && window.i18n.currentLang) || "en",
+          }),
+        }),
+      ]);
+
+      const sevData = await sevResp.json();
+      const ragData = await ragResp.json();
+
+      // Render Severity Banner
+      if (severityContainer) {
+        severityContainer.style.display = "block";
+        const sevClass = sevData.severity === "CRITICAL" ? "severity-critical" : sevData.severity === "MODERATE" ? "severity-moderate" : "severity-low";
+        const sevIcon = sevData.severity === "CRITICAL" ? "🛑" : sevData.severity === "MODERATE" ? "⚠️" : "ℹ️";
+
+        severityContainer.innerHTML = `
+          <div class="severity-banner ${sevClass}">
+            <span style="font-size: 1.5rem;">${sevIcon}</span>
+            <div>
+              <div class="severity-title">${sevData.severity} SEVERITY HAZARD</div>
+              <div>${sevData.rationale}</div>
+              ${
+                sevData.stop_driving_immediately
+                  ? `<div style="font-weight: 800; color: #ffffff; margin-top: 0.35rem; background: #dc2626; padding: 0.3rem 0.6rem; border-radius: 4px; display: inline-block;">⚠️ DO NOT DRIVE: Pull over safely and arrange towing.</div>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+      }
+
+      // Render RAG Explanation
+      state.manualResult = ragData;
+      renderAssistantResult(ragData, resultContainer);
+
+      // Speak if auto-voice enabled
+      const autoVoice = document.getElementById("settings-auto-voice");
+      if (autoVoice && autoVoice.checked && window.voiceManager && ragData.simple_explanation) {
+        const textToSpeak = `${ragData.simple_explanation.what_does_it_mean} ${ragData.simple_explanation.what_should_you_do}`;
+        window.voiceManager.speak(textToSpeak);
+      }
+    } catch (err) {
+      if (resultContainer) {
+        resultContainer.innerHTML = `
+          <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
+            <strong>Analysis Error:</strong> ${err.message}. Please verify the backend is running.
+          </div>
+        `;
+      }
+    }
+  });
+}
+
+function formatListOrStr(val, fallback = "") {
+  if (!val) return fallback;
+  if (Array.isArray(val)) {
+    return `<ul style="padding-left: 1.25rem; margin: 0.25rem 0;">${val.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+  }
+  return val;
+}
+
+function renderAssistantResult(data, container) {
+  if (!container) return;
+  const exp = data.simple_explanation || {};
+  const questions = data.questions_for_mechanic || exp.suggested_mechanic_questions || [];
+
+  container.innerHTML = `
+    <div class="simple-explanation-card">
+      <div class="simple-section-block">
+        <div class="simple-sec-title">💡 What does it mean?</div>
+        <div class="simple-sec-body">${exp.what_does_it_mean || "No explanation available."}</div>
+      </div>
+
+      <div class="simple-section-block">
+        <div class="simple-sec-title">🔍 Why does it happen?</div>
+        <div class="simple-sec-body">${exp.why_does_it_happen || "Information not found."}</div>
+      </div>
+
+      <div class="simple-section-block">
+        <div class="simple-sec-title">⚠️ What symptoms might you notice?</div>
+        <div class="simple-sec-body">${formatListOrStr(exp.symptoms_you_might_notice || exp.what_symptoms_might_you_notice, "None specified.")}</div>
+      </div>
+
+      <div class="simple-section-block">
+        <div class="simple-sec-title">✅ What should you do?</div>
+        <div class="simple-sec-body">${formatListOrStr(exp.what_should_you_do, "Follow vehicle safety guidelines.")}</div>
+      </div>
+
+      <div class="simple-section-block">
+        <div class="simple-sec-title">🔧 When should you visit a mechanic?</div>
+        <div class="simple-sec-body">${exp.when_to_visit_mechanic || "If symptoms persist."}</div>
+      </div>
+
+      ${
+        questions.length > 0
+          ? `
+        <div class="ask-mechanic-box">
+          <div class="ask-mechanic-header">
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--accent-cyan);">🗣️ Recommended Questions for Your Mechanic:</h4>
+            <button type="button" class="btn-icon" onclick="copyQuestionsToClipboard()" style="font-size: 0.72rem;">📋 Copy</button>
+          </div>
+          <ul class="ask-mechanic-list" id="assist-questions-list">
+            ${questions.map((q) => `<li>${q}</li>`).join("")}
+          </ul>
+        </div>
+      `
+          : ""
+      }
+
+      <div class="voice-player-bar">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>🔊</span>
+          <span id="assist-voice-status" style="font-size: 0.8rem; font-weight: 600;">Listen to AI explanation</span>
+        </div>
+        <div class="voice-btn-group">
+          <button type="button" class="voice-btn" onclick="speakCurrentAssistantResult()">▶️ Play</button>
+          <button type="button" class="voice-btn" onclick="window.voiceManager?.pause()">⏸️ Pause</button>
+          <button type="button" class="voice-btn" onclick="window.voiceManager?.stopSpeaking()">⏹️ Stop</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.speakCurrentAssistantResult = function () {
+  if (!window.voiceManager || !state.manualResult || !state.manualResult.simple_explanation) return;
+  const exp = state.manualResult.simple_explanation;
+  const text = `${exp.what_does_it_mean} Why does it happen? ${exp.why_does_it_happen} What should you do? ${exp.what_should_you_do}`;
+  window.voiceManager.speak(text);
+};
+
+// ==========================================================================
+// 7. Intelligent Manual Search with Dual View (/api/rag/explain)
+// ==========================================================================
+function initManualsSearch() {
+  const form = document.getElementById("manuals-search-form");
+  const input = document.getElementById("manual-search-input");
+  const chips = document.querySelectorAll(".manual-chip");
+
+  chips.forEach((c) => {
+    c.addEventListener("click", () => {
+      if (input) {
+        input.value = c.dataset.q;
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+
+  setupVoicePlayerBar(
+    "manual-voice-bar",
+    "manual-voice-status",
+    "manual-voice-play",
+    "manual-voice-pause",
+    "manual-voice-stop",
+    () => {
+      if (!state.manualResult || !state.manualResult.simple_explanation) return "";
+      const exp = state.manualResult.simple_explanation;
+      return `${exp.what_does_it_mean} ${exp.what_should_you_do}`;
+    }
+  );
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    const container = document.getElementById("manuals-results-container");
+    const voiceBar = document.getElementById("manual-voice-bar");
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 2.5rem; text-align: center; color: var(--accent-cyan);">
+          <div class="status-dot" style="margin: 0 auto 0.75rem; width: 14px; height: 14px;"></div>
+          Dense ONNX 384d semantic retrieval across 9 factory OEM service manuals...
+        </div>
+      `;
+    }
+
+    try {
+      const resp = await fetch("/api/rag/explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: query,
+          top_k: 5,
+          language: (window.i18n && window.i18n.currentLang) || "en",
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`Server returned HTTP ${resp.status}`);
+      const data = await resp.json();
+      state.manualResult = data;
+
+      if (voiceBar) voiceBar.style.display = "flex";
+      renderManualSearchResults();
+    } catch (err) {
+      if (container) {
+        container.innerHTML = `
+          <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
+            <strong>Search Error:</strong> ${err.message}. Please verify the backend is running.
+          </div>
+        `;
+      }
+    }
+  });
+}
+
+window.switchManualView = function (viewMode) {
+  state.manualViewMode = viewMode;
+  const simpleBtn = document.getElementById("btn-view-simple");
+  const techBtn = document.getElementById("btn-view-technical");
+
+  if (viewMode === "simple") {
+    if (simpleBtn) simpleBtn.classList.add("active");
+    if (techBtn) techBtn.classList.remove("active");
+  } else {
+    if (techBtn) techBtn.classList.add("active");
+    if (simpleBtn) simpleBtn.classList.remove("active");
+  }
+
+  renderManualSearchResults();
+};
+
+function renderManualSearchResults() {
+  const container = document.getElementById("manuals-results-container");
+  if (!container || !state.manualResult) return;
+
+  const data = state.manualResult;
+  const isSimple = state.manualViewMode === "simple";
+
+  if (isSimple) {
+    const exp = data.simple_explanation || {};
+    const questions = data.questions_for_mechanic || [];
+
+    container.innerHTML = `
+      <div class="simple-explanation-card">
+        <div class="simple-section-block">
+          <div class="simple-sec-title">💡 What does it mean?</div>
+          <div class="simple-sec-body">${exp.what_does_it_mean || "Grounded explanation being processed."}</div>
+        </div>
+
+        <div class="simple-section-block">
+          <div class="simple-sec-title">⚙️ Why does it happen?</div>
+          <div class="simple-sec-body">${exp.why_does_it_happen || "Potential mechanical causes being referenced."}</div>
+        </div>
+
+        <div class="simple-section-block">
+          <div class="simple-sec-title">⚠️ What symptoms might you notice?</div>
+          <div class="simple-sec-body">${formatListOrStr(exp.symptoms_you_might_notice || exp.what_symptoms_might_you_notice, "Common observable signs.")}</div>
+        </div>
+
+        <div class="simple-section-block">
+          <div class="simple-sec-title">🛡️ What should you do?</div>
+          <div class="simple-sec-body">${formatListOrStr(exp.what_should_you_do, "Safe recommended actions.")}</div>
+        </div>
+
+        <div class="simple-section-block">
+          <div class="simple-sec-title">👨‍🔧 When should you visit a mechanic?</div>
+          <div class="simple-sec-body">${exp.when_to_visit_mechanic || "Professional inspection criteria."}</div>
+        </div>
+
+        ${
+          questions.length > 0
+            ? `
+          <div class="ask-mechanic-box">
+            <div class="ask-mechanic-header">
+              <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--accent-cyan);">🗣️ Recommended Questions for Your Mechanic:</h4>
+              <button type="button" class="btn-icon" onclick="copyQuestionsToClipboard()" style="font-size: 0.72rem;">📋 Copy Questions</button>
+            </div>
+            <ul class="ask-mechanic-list" id="manual-questions-list">
+              ${questions.map((q) => `<li>${q}</li>`).join("")}
+            </ul>
+          </div>
+        `
+            : ""
+        }
+      </div>
+    `;
+  } else {
+    // Technical OEM Manual Passages View
+    const chunks = data.technical_passages || [];
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);">
+          Retrieved <strong>${chunks.length}</strong> official OEM manual passages (Cosine similarity)
+        </span>
+        <span style="font-size: 0.75rem; color: var(--accent-cyan); font-family: monospace;">all-MiniLM-L6-v2 ONNX</span>
+      </div>
+
+      <div class="rag-chunks-list">
+        ${chunks
+          .map(
+            (c, idx) => `
+          <div class="rag-chunk-card" style="border-left-width: 4px;">
+            <div class="rag-chunk-header">
+              <div>
+                <span style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">#${idx + 1}</span>
+                <strong>${c.document_title || "OEM Service Manual"}</strong>
+                <span style="color: var(--text-dim); font-size: 0.75rem;"> &bull; Section: ${c.section || "Technical Procedure"} (Page ${c.page_number || 1})</span>
+              </div>
+              <div style="font-family: monospace; font-size: 0.8rem; color: var(--accent-cyan);">
+                Sim: ${(c.similarity || 0.85).toFixed(4)}
+              </div>
+            </div>
+            <div class="rag-chunk-text" style="font-size: 0.85rem; margin-top: 0.6rem; line-height: 1.6;">${c.content}</div>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+}
+
+window.copyQuestionsToClipboard = function () {
+  const list = document.querySelectorAll(".ask-mechanic-list li");
+  const text = Array.from(list)
+    .map((li, idx) => `${idx + 1}. ${li.innerText}`)
+    .join("\n");
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Mechanic questions copied to clipboard!");
+  });
+};
+
+// ==========================================================================
+// 8. AI Repair Cost Estimator (/api/pricing/estimate)
+// ==========================================================================
+function initCostEstimator() {
+  const form = document.getElementById("estimator-form");
+  const input = document.getElementById("est-query-input");
+  const chips = document.querySelectorAll(".est-chip");
+  const container = document.getElementById("estimator-result-container");
+
+  chips.forEach((c) => {
+    c.addEventListener("click", () => {
+      if (input) {
+        input.value = c.dataset.q;
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 2.5rem; text-align: center; color: var(--accent-cyan);">
+          <div class="status-dot" style="margin: 0 auto 0.75rem; width: 14px; height: 14px;"></div>
+          Querying verified spare parts and local labor rate database...
+        </div>
+      `;
+    }
+
+    const payload = {
+      problem_query: query,
+      vehicle_make: document.getElementById("est-make")?.value || state.activeVehicle.make,
+      vehicle_model: document.getElementById("est-model")?.value || state.activeVehicle.model,
+      vehicle_year: parseInt(document.getElementById("est-year")?.value || "2022", 10),
+      city: document.getElementById("est-city")?.value || "Bengaluru",
+    };
+
+    try {
+      const resp = await fetch("/api/pricing/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) throw new Error(`Server returned HTTP ${resp.status}`);
+      const data = await resp.json();
+      renderCostEstimateResult(data, container);
+    } catch (err) {
+      if (container) {
+        container.innerHTML = `
+          <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
+            <strong>Estimator Error:</strong> ${err.message}. Please verify the backend is running.
+          </div>
+        `;
+      }
+    }
+  });
+}
+
+function renderCostEstimateResult(data, container) {
+  if (!container) return;
+
+  if (!data.matched) {
+    container.innerHTML = `
+      <div style="padding: 1.75rem; background: rgba(148, 163, 184, 0.08); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center;">
+        <span style="font-size: 2rem;">🔍</span>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin: 0.5rem 0;">Pricing data unavailable</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 500px; margin: 0 auto 0.75rem;">
+          No verified OEM spare-part or labor record matched "${data.query || "this component"}". AutoAssist AI strictly avoids generating fabricated or imaginary prices.
+        </p>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">
+          Tip: Try searching for a specific component such as "Brake Pads", "Alternator", "Thermostat", or "Engine Oil".
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+        <div>
+          <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--accent-cyan); font-weight: 700; letter-spacing: 0.5px;">Verified Cost Breakdown &bull; ${data.currency || "INR"}</span>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-top: 0.2rem;">${data.part_name}</h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">${data.vehicle_applied || "All Vehicles"} &bull; Category: ${data.category || "Mechanical"}</span>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.75rem; color: var(--text-dim);">Location Labor Modifier:</span>
+          <div style="font-weight: 700; color: var(--accent-cyan);">${data.city_applied || "All India"}</div>
+        </div>
+      </div>
+
+      <div class="dashboard-metrics-grid" style="margin-bottom: 1.25rem;">
+        <div class="metric-card">
+          <span class="metric-label">Spare Parts Range</span>
+          <span class="metric-val" style="color: var(--accent-cyan); font-size: 1.35rem;">${data.parts_cost_range_inr}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Estimated Labor</span>
+          <span class="metric-val" style="color: var(--accent-amber); font-size: 1.35rem;">${data.labor_hours} hrs</span>
+          <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">${data.labor_charge_inr}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Total Estimated Repair</span>
+          <span class="metric-val" style="color: var(--accent-emerald); font-size: 1.35rem;">${data.total_estimated_cost_inr}</span>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto; margin-bottom: 1rem;">
+        <table class="quote-table">
+          <thead>
+            <tr>
+              <th>Component / Service</th>
+              <th>Part Price Range</th>
+              <th>Labor Hours</th>
+              <th>Labor Charge</th>
+              <th>Skill Rating</th>
+              <th>Pricing Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 700;">${data.part_name}</td>
+              <td style="color: var(--accent-cyan);">${data.parts_cost_range_inr}</td>
+              <td>${data.labor_hours} hrs</td>
+              <td style="color: var(--accent-amber);">${data.labor_charge_inr}</td>
+              <td><span class="badge-risk badge-MEDIUM" style="font-size: 0.7rem;">${data.difficulty || "Intermediate"}</span></td>
+              <td style="font-size: 0.75rem; color: var(--text-dim);">${data.pricing_source || "Verified OEM Reference"}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="font-size: 0.74rem; color: var(--text-dim); line-height: 1.5; padding: 0.75rem; background: rgba(15, 23, 42, 0.6); border-radius: 6px;">
+        ⚠️ <strong>Disclaimer:</strong> ${data.disclaimer}
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================================================
+// 9. Mechanic Quotation Checker (/api/quotations/evaluate)
+// ==========================================================================
+function initQuotationChecker() {
+  const addRowBtn = document.getElementById("quote-add-item-btn");
+  const tbody = document.getElementById("quote-items-tbody");
+  const form = document.getElementById("quote-checker-form");
+  const container = document.getElementById("quote-results-container");
+
+  if (addRowBtn && tbody) {
+    addRowBtn.addEventListener("click", () => {
+      const tr = document.createElement("tr");
+      tr.className = "quote-input-row";
+      tr.innerHTML = `
+        <td><input type="text" class="text-input row-item-name" placeholder="e.g. Engine Oil Flush" required></td>
+        <td><input type="number" class="text-input row-part-price" value="0" min="0" required></td>
+        <td><input type="number" class="text-input row-labor-price" value="0" min="0" required></td>
+        <td style="text-align: center;"><button type="button" class="btn-icon remove-row-btn" style="padding: 0.2rem 0.5rem; color: #fca5a5;">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+      attachRemoveRowListeners();
+    });
+  }
+
+  attachRemoveRowListeners();
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const rows = document.querySelectorAll("#quote-items-tbody .quote-input-row");
+    const items = [];
+
+    rows.forEach((row) => {
+      const name = row.querySelector(".row-item-name")?.value.trim();
+      const parts = parseFloat(row.querySelector(".row-part-price")?.value || "0");
+      const labor = parseFloat(row.querySelector(".row-labor-price")?.value || "0");
+      if (name) {
+        items.push({
+          item_name: name,
+          quoted_part_price: parts,
+          quoted_labor_price: labor,
+        });
+      }
+    });
+
+    if (items.length === 0) {
+      alert("Please add at least one quotation item.");
+      return;
+    }
+
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 2.5rem; text-align: center; color: var(--accent-cyan);">
+          <div class="status-dot" style="margin: 0 auto 0.75rem; width: 14px; height: 14px;"></div>
+          Cross-checking line items against verified regional benchmarks...
+        </div>
+      `;
+    }
+
+    const payload = {
+      title: document.getElementById("quote-job-title")?.value || "Workshop Quotation",
+      garage_name: document.getElementById("quote-garage-name")?.value || null,
+      city: document.getElementById("quote-city")?.value || "Bengaluru",
+      items: items,
+    };
+
+    try {
+      const resp = await fetch("/api/quotations/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) throw new Error(`Server returned HTTP ${resp.status}`);
+      const data = await resp.json();
+      renderQuotationResults(data, container);
+    } catch (err) {
+      if (container) {
+        container.innerHTML = `
+          <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
+            <strong>Evaluation Error:</strong> ${err.message}. Please verify the backend is running.
+          </div>
+        `;
+      }
+    }
+  });
+}
+
+function attachRemoveRowListeners() {
+  const removeBtns = document.querySelectorAll(".remove-row-btn");
+  removeBtns.forEach((b) => {
+    b.onclick = function () {
+      const row = b.closest("tr");
+      if (document.querySelectorAll("#quote-items-tbody tr").length > 1) {
+        row.remove();
+      } else {
+        alert("At least one quotation line item is required.");
+      }
+    };
+  });
+}
+
+function renderQuotationResults(data, container) {
+  if (!container) return;
+
+  const statusBadge = (st) => {
+    const s = (st || "").toLowerCase();
+    if (s.includes("within")) return `<span class="quote-badge badge-within">Within Range</span>`;
+    if (s.includes("above") || s.includes("higher")) return `<span class="quote-badge badge-above">Above Reference</span>`;
+    if (s.includes("below") || s.includes("lower")) return `<span class="quote-badge badge-below">Below Reference</span>`;
+    return `<span class="quote-badge badge-unavailable">No Data</span>`;
+  };
+
+  const title = data.repair_title || data.title || "Quotation Review";
+  const totalQuoted = data.total_quoted || data.total_quoted_cost || 0;
+  const refMin = data.total_reference_min || 0;
+  const refMax = data.total_reference_max || 0;
+
+  container.innerHTML = `
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">${title}</h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">${data.garage_name || "General Workshop"} &bull; City: ${data.city || "Bengaluru"}</span>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Total Quoted vs Benchmark</span>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-cyan);">
+            ₹${totalQuoted.toLocaleString()} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Ref: ₹${refMin.toLocaleString()}–₹${refMax.toLocaleString()})</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-table-wrapper" style="margin-bottom: 1.25rem;">
+        <table class="quote-table">
+          <thead>
+            <tr>
+              <th>Line Item</th>
+              <th>Quoted Total (₹)</th>
+              <th>Verified Range (₹)</th>
+              <th>Variance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(data.items || [])
+              .map(
+                (item) => `
+              <tr>
+                <td style="font-weight: 700;">
+                  ${item.service_or_part || item.item_name || "Service Item"}
+                  <div style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">Parts: ₹${(item.quoted_part_price || 0).toLocaleString()} | Labor: ₹${(item.quoted_labor_price || 0).toLocaleString()}</div>
+                </td>
+                <td style="font-weight: 700; color: var(--text-main);">₹${(item.quoted_total || 0).toLocaleString()}</td>
+                <td style="color: var(--accent-cyan);">${item.reference_range_display || (item.reference_total_min ? `₹${item.reference_total_min.toLocaleString()} – ₹${item.reference_total_max.toLocaleString()}` : "Unavailable")}</td>
+                <td style="font-size: 0.8rem; color: ${(item.difference_max || 0) > 0 ? 'var(--accent-amber)' : 'var(--accent-emerald)'};">${(item.difference_max || 0) > 0 ? `+₹${item.difference_max.toLocaleString()}` : "₹0"}</td>
+                <td>${statusBadge(item.status)}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Educational Note -->
+      <div style="padding: 1rem; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; margin-bottom: 1.25rem;">
+        <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.35rem;">💡 Educational Note on Price Differences:</h4>
+        <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">${data.educational_note || "Prices can vary based on genuine OEM vs aftermarket components and technician expertise."}</p>
+      </div>
+
+      <!-- Mechanic Discussion Questions -->
+      ${
+        data.questions_for_mechanic && data.questions_for_mechanic.length > 0
+          ? `
+        <div class="ask-mechanic-box" style="margin-top: 0;">
+          <div class="ask-mechanic-header">
+            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--accent-cyan);">🗣️ Non-Confrontational Questions for Your Garage:</h4>
+            <button type="button" class="btn-icon" onclick="copyQuestionsToClipboard()" style="font-size: 0.72rem;">📋 Copy Questions</button>
+          </div>
+          <ul class="ask-mechanic-list">
+            ${data.questions_for_mechanic.map((q) => `<li>${q}</li>`).join("")}
+          </ul>
+        </div>
+      `
+          : ""
+      }
+    </div>
+  `;
+}
+
+// ==========================================================================
+// 10. Settings & Preferences Panel
+// ==========================================================================
+function initSettingsPanel() {
+  const rateSlider = document.getElementById("settings-voice-rate");
+  const pitchSlider = document.getElementById("settings-voice-pitch");
+  const rateVal = document.getElementById("voice-rate-val");
+  const pitchVal = document.getElementById("voice-pitch-val");
+  const voiceSelect = document.getElementById("settings-voice-select");
+  const testVoiceBtn = document.getElementById("settings-test-voice-btn");
+
+  if (rateSlider && rateVal && window.voiceManager) {
+    rateSlider.value = window.voiceManager.speechRate;
+    rateVal.innerText = `${rateSlider.value}x`;
+    rateSlider.addEventListener("input", () => {
+      rateVal.innerText = `${rateSlider.value}x`;
+      window.voiceManager.setSpeechRate(parseFloat(rateSlider.value));
+    });
+  }
+
+  if (pitchSlider && pitchVal && window.voiceManager) {
+    pitchSlider.value = window.voiceManager.speechPitch;
+    pitchVal.innerText = pitchSlider.value;
+    pitchSlider.addEventListener("input", () => {
+      pitchVal.innerText = pitchSlider.value;
+      window.voiceManager.setSpeechPitch(parseFloat(pitchSlider.value));
+    });
+  }
+
+  if (voiceSelect && window.voiceManager) {
+    voiceSelect.addEventListener("change", () => {
+      window.voiceManager.setVoiceURI(voiceSelect.value);
+    });
+  }
+
+  if (testVoiceBtn && window.voiceManager) {
+    testVoiceBtn.addEventListener("click", () => {
+      const lang = (window.i18n && window.i18n.currentLang) || "en";
+      const sampleTexts = {
+        en: "AutoAssist AI voice synthesis online. Engine diagnostic telemetry verified.",
+        hi: "ऑटोअसिस्ट एआई आवाज़ संश्लेषण तैयार है। आपका वाहन डायग्नोस्टिक सत्यापित है।",
+        kn: "ಆಟೋಅಸಿಸ್ಟ್ ಎಐ ಧ್ವನಿ ಸಿದ್ಧವಾಗಿದೆ. ವಾಹನ ತಪಾಸಣೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
+        ar: "تم تشغيل نظام التحدث الآلي أوتو أسيست. التشخيص جاهز.",
+        ur: "آٹو اسسٹ اے آئی آواز فعال ہے۔ گاڑی کی تشخیص کی تصدیق ہو چکی ہے۔",
+      };
+      window.voiceManager.speak(sampleTexts[lang] || sampleTexts.en);
+    });
+  }
+}
+
+// ==========================================================================
+// 11. Preserved Specialized Analyzers: DTC, Electrical, Thermal, NVH, etc.
+// ==========================================================================
+
 function showLoadingInResultBox(targetContainerId, title = "Analyzing Diagnostic Telemetry...") {
   const container = document.getElementById(targetContainerId);
   if (!container) return;
@@ -127,7 +1356,6 @@ function showLoadingInResultBox(targetContainerId, title = "Analyzing Diagnostic
   container.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// Error Feedback for Result Box
 function renderErrorResult(errMessage, targetContainerId) {
   const container = document.getElementById(targetContainerId);
   if (!container) return;
@@ -143,14 +1371,13 @@ function renderErrorResult(errMessage, targetContainerId) {
   container.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// Render Universal Diagnostic Result Box
 function renderDiagnosticResult(result, targetContainerId) {
   state.lastResult = result;
   const container = document.getElementById(targetContainerId);
   if (!container) return;
 
   if (!result || typeof result !== "object" || !result.subsystem || !result.primary_verdict) {
-    const detailMsg = (result && result.detail) ? result.detail : "Invalid or incomplete diagnostic verdict returned by backend.";
+    const detailMsg = result && result.detail ? result.detail : "Invalid or incomplete diagnostic verdict returned by backend.";
     renderErrorResult(detailMsg, targetContainerId);
     return;
   }
@@ -159,7 +1386,6 @@ function renderDiagnosticResult(result, targetContainerId) {
   const advisoryClass = isSafe ? "advisory-safe" : "advisory-danger";
   const advisoryIcon = isSafe ? "✅" : "⚠️";
 
-  // Build Probabilities
   let causesHtml = "";
   if (result.probable_causes && result.probable_causes.length > 0) {
     causesHtml = `
@@ -185,7 +1411,6 @@ function renderDiagnosticResult(result, targetContainerId) {
     `;
   }
 
-  // Build Action Steps
   let stepsHtml = "";
   if (result.action_plan && result.action_plan.length > 0) {
     stepsHtml = `
@@ -199,11 +1424,7 @@ function renderDiagnosticResult(result, targetContainerId) {
             <div class="step-content">
               <h4>${s.title}</h4>
               <p>${s.description}</p>
-              ${
-                s.tools_needed && s.tools_needed.length > 0
-                  ? `<div class="step-tools">🔧 <strong>Tools:</strong> ${s.tools_needed.join(", ")}</div>`
-                  : ""
-              }
+              ${s.tools_needed && s.tools_needed.length > 0 ? `<div class="step-tools">🔧 <strong>Tools:</strong> ${s.tools_needed.join(", ")}</div>` : ""}
             </div>
           </div>
         `
@@ -213,7 +1434,6 @@ function renderDiagnosticResult(result, targetContainerId) {
     `;
   }
 
-  // Build Cost Estimate
   let costHtml = "";
   if (result.cost_estimate) {
     const ce = result.cost_estimate;
@@ -242,7 +1462,6 @@ function renderDiagnosticResult(result, targetContainerId) {
     `;
   }
 
-  // Build RAG Manual References
   let ragHtml = "";
   if (result.rag_reference_chunks && result.rag_reference_chunks.length > 0) {
     ragHtml = `
@@ -304,107 +1523,7 @@ function renderDiagnosticResult(result, targetContainerId) {
   container.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// 1. RAG Semantic Knowledge Search
-function initRAGSearch() {
-  const form = document.getElementById("rag-search-form");
-  const input = document.getElementById("rag-query-input");
-  const resultsContainer = document.getElementById("rag-results");
-  const quickChips = document.querySelectorAll(".rag-quick-chip");
-
-  quickChips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      if (input) {
-        input.value = chip.dataset.query;
-        form.dispatchEvent(new Event("submit"));
-      }
-    });
-  });
-
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
-
-    resultsContainer.innerHTML = `
-      <div style="padding: 2rem; text-align: center; color: var(--accent-cyan);">
-        <div class="status-dot" style="margin: 0 auto 0.75rem; width: 12px; height: 12px;"></div>
-        Searching 129 technical manual chunks with 384d semantic embeddings...
-      </div>
-    `;
-
-    try {
-      const resp = await fetch("/api/rag/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: query,
-          top_k: 5,
-          similarity_threshold: 0.20,
-          manufacturer: state.currentVehicle.make !== "Generic" ? state.currentVehicle.make : null,
-        }),
-      });
-
-      if (!resp.ok) {
-        throw new Error(`Server returned HTTP ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      renderRAGSearchResults(data, resultsContainer);
-    } catch (err) {
-      resultsContainer.innerHTML = `
-        <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-crimson); border-radius: 8px; color: #fca5a5;">
-          <strong>Retrieval Error:</strong> ${err.message}. Please verify the backend is running.
-        </div>
-      `;
-    }
-  });
-}
-
-function renderRAGSearchResults(data, container) {
-  if (!data.results || data.results.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-        No technical manual sections met the similarity threshold for this query. Try rephrasing your mechanical symptom.
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <span style="font-size: 0.85rem; color: var(--text-muted);">
-        Found <strong>${data.total_results}</strong> matches in <strong>${data.latency_ms.toFixed(1)}ms</strong>
-      </span>
-      <span style="font-size: 0.75rem; color: var(--accent-cyan); font-family: monospace;">all-MiniLM-L6-v2 ONNX</span>
-    </div>
-
-    <div class="rag-chunks-list">
-      ${data.results
-        .map(
-          (item, idx) => `
-        <div class="rag-chunk-card" style="border-left-width: 4px;">
-          <div class="rag-chunk-header">
-            <div>
-              <span style="background: rgba(223, 202, 167, 0.15); color: var(--accent-cyan); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">#${idx + 1}</span>
-              <strong>${item.document_title}</strong>
-              <span style="color: var(--text-dim); font-size: 0.75rem;"> • ${item.section || "Technical Guide"} (Page ${item.page_number || 1})</span>
-            </div>
-            <div style="font-family: monospace; font-size: 0.8rem; color: var(--accent-cyan);">
-              Cosine Sim: ${item.similarity.toFixed(4)}
-            </div>
-          </div>
-          <div class="rag-chunk-text" style="font-size: 0.85rem; margin-top: 0.5rem;">${item.content}</div>
-        </div>
-      `
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-// 2. OBD-II / DTC Scanner
+// 2. OBD-II DTC Scanner
 function initDTCScanner() {
   const form = document.getElementById("dtc-form");
   const codeInput = document.getElementById("dtc-code-input");
@@ -431,8 +1550,8 @@ function initDTCScanner() {
 
     const payload = {
       code: code,
-      vehicle_make: state.currentVehicle.make,
-      vehicle_model: state.currentVehicle.model,
+      vehicle_make: state.activeVehicle.make,
+      vehicle_model: state.activeVehicle.model,
       include_rag_chunks: true,
       freeze_frame: {
         engine_rpm: parseInt(document.getElementById("ff-rpm")?.value || "0", 10) || null,
@@ -604,7 +1723,6 @@ function initBrakeAnalyzer() {
       pedal_feel: document.getElementById("brake-pedal-feel")?.value || "normal_firm",
       rotor_condition: document.getElementById("brake-rotor-cond")?.value || "smooth",
       pulls_when_braking: document.getElementById("brake-pull")?.value || "none",
-      abs_warning_light: document.getElementById("brake-abs-light")?.checked || false,
       include_rag_chunks: true,
     };
 
@@ -676,7 +1794,7 @@ function initEmissionsAnalyzer() {
       stft_2500rpm_pct: parseFloat(document.getElementById("em-stft-2500")?.value || "0.0"),
       ltft_2500rpm_pct: parseFloat(document.getElementById("em-ltft-2500")?.value || "0.0"),
       exhaust_smoke_color: document.getElementById("em-exhaust-smoke")?.value || "none",
-      raw_fuel_odor: document.getElementById("em-fuel-smell")?.checked || false,
+      raw_fuel_odor: false,
       include_rag_chunks: true,
     };
 
@@ -698,7 +1816,7 @@ function initEmissionsAnalyzer() {
   });
 }
 
-// 9. Interactive Guided Diagnostic Wizard
+// 9. Interactive Problem Wizard
 function initWizard() {
   const domainBtns = document.querySelectorAll(".wizard-domain-btn");
   const stageDomains = document.getElementById("wizard-stage-domains");
@@ -832,51 +1950,16 @@ window.resetWizard = function () {
   }
 };
 
-// 10. Load Price Guide Table
-async function loadPriceGuide() {
-  const tbody = document.getElementById("price-guide-tbody");
-  if (!tbody) return;
-
-  try {
-    const resp = await fetch("/api/analyzers/repairs/price-guide");
-    const data = await resp.json();
-
-    const rows = Object.entries(data).map(([key, item]) => {
-      const cleanName = key
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
-      return `
-        <tr>
-          <td style="padding: 0.75rem 1rem; font-weight: 600; color: var(--text-main);">${cleanName}</td>
-          <td style="padding: 0.75rem 1rem; color: var(--accent-cyan);">${item.parts}</td>
-          <td style="padding: 0.75rem 1rem; color: var(--text-muted);">${item.labor_hours} hrs</td>
-          <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--accent-emerald);">${item.pro_total}</td>
-          <td style="padding: 0.75rem 1rem;"><span class="badge-risk badge-MEDIUM" style="font-size: 0.7rem;">${item.difficulty}</span></td>
-        </tr>
-      `;
-    });
-
-    tbody.innerHTML = rows.join("");
-  } catch (e) {
-    console.error("Could not load price guide:", e);
-  }
-}
-
-// Printable Work Order Modal
+// 10. Printable Work Order Modal
 function initWorkOrderModal() {
   const modal = document.getElementById("work-order-modal");
   const closeBtn = document.getElementById("modal-close-btn");
 
   if (closeBtn && modal) {
-    closeBtn.addEventListener("click", () => {
-      modal.classList.remove("open");
-    });
+    closeBtn.addEventListener("click", () => modal.classList.remove("open"));
   }
-
   window.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.classList.remove("open");
-    }
+    if (e.target === modal) modal.classList.remove("open");
   });
 }
 
@@ -891,19 +1974,15 @@ window.openWorkOrderModal = function () {
     return;
   }
 
-  const v = state.currentVehicle;
-  const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const v = state.activeVehicle;
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   content.innerHTML = `
     <div style="border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
           <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">AUTOASSIST AI REPAIR ORDER</h2>
-          <p style="font-size: 0.78rem; color: var(--text-muted);">Certified Diagnostic Sheet & Mechanical Assessment</p>
+          <p style="font-size: 0.78rem; color: var(--text-muted);">Informational Diagnostic Sheet & Reference Guide</p>
         </div>
         <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
           <div>Date: <strong>${today}</strong></div>
@@ -916,13 +1995,13 @@ window.openWorkOrderModal = function () {
       <div><span style="color: var(--text-dim);">Vehicle Make:</span><br><strong>${v.make}</strong></div>
       <div><span style="color: var(--text-dim);">Model:</span><br><strong>${v.model}</strong></div>
       <div><span style="color: var(--text-dim);">Year:</span><br><strong>${v.year}</strong></div>
-      <div><span style="color: var(--text-dim);">Mileage:</span><br><strong>${v.mileage.toLocaleString()} mi</strong></div>
+      <div><span style="color: var(--text-dim);">Mileage:</span><br><strong>${(v.mileage_km || 45000).toLocaleString()} km</strong></div>
     </div>
 
     <div style="margin-bottom: 1.25rem;">
       <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">1. Diagnostic Verdict</h3>
       <p style="font-size: 1.15rem; font-weight: 700; margin: 0.35rem 0;">${res.primary_verdict}</p>
-      <div style="font-size: 0.85rem; padding: 0.5rem 0.75rem; background: rgba(223, 202, 167, 0.1); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
+      <div style="font-size: 0.85rem; padding: 0.5rem 0.75rem; background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
         <strong>Safety Advisory:</strong> ${res.driving_advisory}
       </div>
     </div>
@@ -930,39 +2009,9 @@ window.openWorkOrderModal = function () {
     <div style="margin-bottom: 1.25rem;">
       <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">2. Root Causes Identified</h3>
       <ul style="margin-left: 1.25rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5;">
-        ${res.probable_causes
-          .map(
-            (c) => `<li><strong>${c.title}</strong> (${c.probability}% likelihood) — ${c.explanation}</li>`
-          )
-          .join("")}
+        ${res.probable_causes ? res.probable_causes.map((c) => `<li><strong>${c.title}</strong> (${c.probability}% likelihood) — ${c.explanation}</li>`).join("") : ""}
       </ul>
     </div>
-
-    <div style="margin-bottom: 1.25rem;">
-      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">3. Prescribed Action Steps</h3>
-      <ol style="margin-left: 1.25rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5;">
-        ${res.action_plan
-          .map(
-            (s) => `<li><strong>${s.title}:</strong> ${s.description} ${s.tools_needed && s.tools_needed.length > 0 ? `<em>(Tools: ${s.tools_needed.join(", ")})</em>` : ""}</li>`
-          )
-          .join("")}
-      </ol>
-    </div>
-
-    ${
-      res.cost_estimate
-        ? `
-      <div style="margin-bottom: 1.5rem;">
-        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">4. Estimated Cost & Labor</h3>
-        <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; margin-top: 0.4rem;">
-          <div>Parts Cost (INR): <strong>${res.cost_estimate.diy_parts_cost_range_inr || res.cost_estimate.diy_parts_cost_range_usd}</strong></div>
-          <div>Labor Hours: <strong>${res.cost_estimate.professional_labor_hours} hrs</strong></div>
-          <div>Pro Shop Total (INR): <strong>${res.cost_estimate.professional_total_cost_range_inr || res.cost_estimate.professional_total_cost_range_usd}</strong></div>
-        </div>
-      </div>
-    `
-        : ""
-    }
 
     <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
       <button class="btn-primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
@@ -972,85 +2021,12 @@ window.openWorkOrderModal = function () {
   modal.classList.add("open");
 };
 
-// ==========================================================================
-// View Routing & Cinematic Intro Controller (Forest Green & Sand Beige)
-// ==========================================================================
+// 11. 1-Click Simulations Runner
+window.runDemo = function (demoType) {
+  navigateToSection("assistant");
 
-// Global Studio Tab Switcher: directly activates both the tab button and the panel
-window.switchStudioTab = function(tabId) {
-  const tabBtns = document.querySelectorAll(".tab-btn");
-  const tabPanels = document.querySelectorAll(".tab-panel");
-
-  tabBtns.forEach((b) => {
-    if (b.getAttribute("data-tab") === tabId) {
-      b.classList.add("active");
-    } else {
-      b.classList.remove("active");
-    }
-  });
-
-  tabPanels.forEach((p) => {
-    if (p.id === tabId) {
-      p.classList.add("active");
-      p.style.display = "block";
-    } else {
-      p.classList.remove("active");
-      p.style.display = "none";
-    }
-  });
-};
-
-// Global View Switcher: easily switch between 'intro' and 'studio'
-window.navigateToView = function(viewName, targetTabId = null) {
-  const viewIntro = document.getElementById("view-intro");
-  const viewStudio = document.getElementById("view-studio");
-  const navBtnIntro = document.getElementById("nav-btn-intro");
-  const navBtnStudio = document.getElementById("nav-btn-studio");
-
-  if (viewName === "studio") {
-    if (viewIntro) {
-      viewIntro.classList.remove("active");
-      viewIntro.style.display = "none";
-    }
-    if (viewStudio) {
-      viewStudio.classList.add("active");
-      viewStudio.style.display = "block";
-    }
-    if (navBtnIntro) navBtnIntro.classList.remove("active");
-    if (navBtnStudio) navBtnStudio.classList.add("active");
-
-    if (targetTabId) {
-      window.switchStudioTab(targetTabId);
-    } else {
-      const activeTab = document.querySelector(".tab-btn.active");
-      if (activeTab && activeTab.getAttribute("data-tab")) {
-        window.switchStudioTab(activeTab.getAttribute("data-tab"));
-      } else {
-        window.switchStudioTab("tab-rag");
-      }
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } else {
-    // Navigate to intro
-    if (viewStudio) {
-      viewStudio.classList.remove("active");
-      viewStudio.style.display = "none";
-    }
-    if (viewIntro) {
-      viewIntro.classList.add("active");
-      viewIntro.style.display = "block";
-    }
-    if (navBtnStudio) navBtnStudio.classList.remove("active");
-    if (navBtnIntro) navBtnIntro.classList.add("active");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-};
-
-// Global Quick 1-Click Interactive Diagnostic Demo Runner
-window.runDemo = function(demoType) {
   if (demoType === "dtc_p0300") {
-    window.navigateToView("studio", "tab-dtc");
+    switchStudioTab("tab-dtc");
     setTimeout(() => {
       const dtcInput = document.getElementById("dtc-code-input");
       const rpm = document.getElementById("ff-rpm");
@@ -1071,61 +2047,51 @@ window.runDemo = function(demoType) {
       }
     }, 150);
   } else if (demoType === "elec_battery") {
-    window.navigateToView("studio", "tab-electrical");
+    switchStudioTab("tab-electrical");
     setTimeout(() => {
       const voltSlider = document.getElementById("resting-voltage-slider");
       const voltVal = document.getElementById("resting-voltage-val");
       const crankInput = document.getElementById("cranking-voltage-input");
       const altInput = document.getElementById("alternator-voltage-input");
-      const drawInput = document.getElementById("parasitic-draw-input");
-      const ageInput = document.getElementById("battery-age-input");
       const elForm = document.getElementById("electrical-form");
       if (voltSlider) voltSlider.value = "10.2";
       if (voltVal) voltVal.innerText = "10.2 V";
       if (crankInput) crankInput.value = "7.6";
       if (altInput) altInput.value = "13.2";
-      if (drawInput) drawInput.value = "120";
-      if (ageInput) ageInput.value = "4.5";
       if (elForm) {
         if (elForm.requestSubmit) elForm.requestSubmit();
         else elForm.dispatchEvent(new Event("submit"));
       }
     }, 150);
   } else if (demoType === "thermal_overheat") {
-    window.navigateToView("studio", "tab-thermal");
+    switchStudioTab("tab-thermal");
     setTimeout(() => {
       const cond = document.getElementById("thermal-condition");
       const level = document.getElementById("thermal-coolant-level");
       const fan = document.getElementById("thermal-fan-status");
-      const heater = document.getElementById("thermal-heater-output");
       const hose = document.getElementById("thermal-hose-temp");
-      const smoke = document.getElementById("thermal-smoke-oil");
       const thForm = document.getElementById("thermal-form");
       if (cond) cond.value = "idle_traffic";
       if (level) level.value = "normal";
       if (fan) fan.value = "no_not_spinning";
-      if (heater) heater.value = "hot";
       if (hose) hose.value = "upper_scalding_lower_cold";
-      if (smoke) smoke.checked = false;
       if (thForm) {
         if (thForm.requestSubmit) thForm.requestSubmit();
         else thForm.dispatchEvent(new Event("submit"));
       }
     }, 150);
   } else if (demoType === "acoustic_whine") {
-    window.navigateToView("studio", "tab-acoustic");
+    switchStudioTab("tab-acoustic");
     setTimeout(() => {
       const soundType = document.getElementById("sound-type");
       const location = document.getElementById("sound-location");
       const condition = document.getElementById("sound-condition");
       const rpmDep = document.getElementById("sound-rpm-dep");
-      const speedDep = document.getElementById("sound-speed-dep");
       const acForm = document.getElementById("acoustic-form");
       if (soundType) soundType.value = "whine_hum";
       if (location) location.value = "engine_front_belt";
       if (condition) condition.value = "accelerating";
       if (rpmDep) rpmDep.checked = true;
-      if (speedDep) speedDep.checked = false;
       if (acForm) {
         if (acForm.requestSubmit) acForm.requestSubmit();
         else acForm.dispatchEvent(new Event("submit"));
@@ -1133,119 +2099,3 @@ window.runDemo = function(demoType) {
     }, 150);
   }
 };
-
-function initCinematicIntro() {
-  const intro = document.getElementById("cinematic-intro");
-  const canvas = document.getElementById("cinematic-canvas");
-
-  // Telemetry Radar Canvas Animation
-  if (!canvas || !intro) return;
-  const ctx = canvas.getContext("2d");
-  let width = (canvas.width = intro.offsetWidth || window.innerWidth);
-  let height = (canvas.height = intro.offsetHeight || 700);
-
-  let mouse = { x: width / 2, y: height / 2, active: false };
-
-  window.addEventListener("resize", () => {
-    const viewIntro = document.getElementById("view-intro");
-    if (viewIntro && viewIntro.classList.contains("active")) {
-      width = canvas.width = intro.offsetWidth || window.innerWidth;
-      height = canvas.height = intro.offsetHeight || 700;
-    }
-  });
-
-  intro.addEventListener("mousemove", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-    mouse.active = true;
-  });
-
-  intro.addEventListener("mouseleave", () => {
-    mouse.active = false;
-  });
-
-  const nodeCount = Math.min(50, Math.max(25, Math.floor((width * height) / 20000)));
-  const nodes = [];
-  const palette = [
-    { color: "rgba(223, 202, 167, 0.75)", radius: 2.2 }, // Sand Beige
-    { color: "rgba(82, 183, 136, 0.7)", radius: 2.0 },  // Forest Emerald
-    { color: "rgba(245, 236, 224, 0.8)", radius: 1.8 }, // Pale Sand
-    { color: "rgba(45, 106, 79, 0.65)", radius: 2.4 },  // Pine Green
-  ];
-
-  for (let i = 0; i < nodeCount; i++) {
-    const p = palette[Math.floor(Math.random() * palette.length)];
-    nodes.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      radius: p.radius,
-      color: p.color,
-    });
-  }
-
-  let scanlineY = 0;
-
-  function render() {
-    const viewIntro = document.getElementById("view-intro");
-    if (!viewIntro || !viewIntro.classList.contains("active")) {
-      requestAnimationFrame(render);
-      return;
-    }
-
-    ctx.clearRect(0, 0, width, height);
-
-    // Subtle Automotive Radar Scanline Sweep
-    scanlineY = (scanlineY + 1.2) % height;
-    const scanGradient = ctx.createLinearGradient(0, scanlineY - 35, 0, scanlineY + 35);
-    scanGradient.addColorStop(0, "rgba(82, 183, 136, 0)");
-    scanGradient.addColorStop(0.5, "rgba(223, 202, 167, 0.08)");
-    scanGradient.addColorStop(1, "rgba(82, 183, 136, 0)");
-    ctx.fillStyle = scanGradient;
-    ctx.fillRect(0, scanlineY - 35, width, 70);
-
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      n.x += n.vx;
-      n.y += n.vy;
-
-      if (n.x < 0 || n.x > width) n.vx *= -1;
-      if (n.y < 0 || n.y > height) n.vy *= -1;
-
-      if (mouse.active) {
-        const dx = mouse.x - n.x;
-        const dy = mouse.y - n.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 130) {
-          n.x += dx * 0.012;
-          n.y += dy * 0.012;
-        }
-      }
-
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-      ctx.fillStyle = n.color;
-      ctx.fill();
-
-      for (let j = i + 1; j < nodes.length; j++) {
-        const n2 = nodes[j];
-        const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
-        if (dist < 110) {
-          const alpha = (1 - dist / 110) * 0.22;
-          ctx.beginPath();
-          ctx.moveTo(n.x, n.y);
-          ctx.lineTo(n2.x, n2.y);
-          ctx.strokeStyle = `rgba(223, 202, 167, ${alpha})`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
-    }
-
-    requestAnimationFrame(render);
-  }
-
-  requestAnimationFrame(render);
-}

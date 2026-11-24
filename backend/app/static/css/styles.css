@@ -1,61 +1,62 @@
-/* AutoAssist AI - Forest Green & Sand Beige Automotive Diagnostic UI */
+/* AutoAssist AI - Dark Navy & Cyan Automotive Diagnostic & Service Platform UI */
 :root {
-  --bg-primary: #0c1812;
-  --bg-secondary: #12241b;
-  --bg-card: #182d22;
-  --bg-card-hover: #223d30;
-  --border-color: #274536;
-  --border-glow: rgba(223, 202, 167, 0.25);
+  --bg-primary: #0a0f1d;
+  --bg-secondary: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #27354a;
+  --border-color: #334155;
+  --border-glow: rgba(56, 189, 248, 0.25);
   
-  --text-main: #f6f2ea;
-  --text-muted: #cbbeaa;
-  --text-dim: #8b9c90;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
   
-  --accent-cyan: #dfcaa7;
-  --accent-sand: #dfcaa7;
-  --accent-sand-light: #f6f1e8;
-  --accent-forest: #2d6a4f;
-  --accent-forest-bright: #52b788;
-  --accent-forest-deep: #1b4332;
-  --accent-blue: #4a7c82;
-  --accent-emerald: #52b788;
-  --accent-amber: #e09f3e;
+  --accent-cyan: #38bdf8;
+  --accent-blue: #2563eb;
+  --accent-sand: #38bdf8;
+  --accent-sand-light: #e0f2fe;
+  --accent-forest: #1e293b;
+  --accent-forest-bright: #38bdf8;
+  --accent-forest-deep: #0f172a;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
   --accent-crimson: #ef4444;
   --accent-purple: #8b5cf6;
   
-  --gradient-cyber: linear-gradient(135deg, #dfcaa7 0%, #c4ab84 100%);
-  --gradient-forest: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
-  --gradient-card: linear-gradient(180deg, rgba(24, 45, 34, 0.95) 0%, rgba(18, 36, 27, 0.95) 100%);
+  --gradient-cyber: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  --gradient-forest: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --gradient-card: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
   --gradient-danger: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  --gradient-warning: linear-gradient(135deg, #e09f3e 0%, #d97706 100%);
-  --gradient-success: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   
-  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 25px rgba(223, 202, 167, 0.15);
+  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.15);
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Light Mode Overrides (Sand Beige Canvas with Forest Green Theme) */
+/* Light Mode Overrides (Crisp Slate Canvas with Cyan/Blue Theme) */
 body.light-theme {
-  --bg-primary: #f5f0e6;
-  --bg-secondary: #e9decc;
-  --bg-card: #fdfcf9;
-  --bg-card-hover: #f3ecde;
-  --border-color: #d6c6ad;
-  --border-glow: rgba(45, 106, 79, 0.25);
-  --text-main: #102218;
-  --text-muted: #3c5446;
-  --text-dim: #71877a;
-  --accent-cyan: #245e43;
-  --gradient-cyber: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
-  --gradient-card: linear-gradient(180deg, #fdfcf9 0%, #f6f0e4 100%);
-  --shadow-subtle: 0 4px 20px rgba(16, 34, 24, 0.08);
-  --shadow-glow: 0 0 25px rgba(45, 106, 79, 0.15);
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --border-color: #cbd5e1;
+  --border-glow: rgba(37, 99, 235, 0.2);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --accent-cyan: #0284c7;
+  --accent-blue: #1d4ed8;
+  --gradient-cyber: linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%);
+  --gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --shadow-subtle: 0 4px 20px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 25px rgba(2, 132, 199, 0.15);
 }
 
 * {
@@ -1610,3 +1611,537 @@ body.light-theme .intro-cta-banner {
     display: none;
   }
 }
+
+/* ==========================================================================
+   AUTOASSIST AI V2: MULTILINGUAL, VOICE, DUAL-VIEW, ESTIMATOR, QUOTE, & RTL
+   ========================================================================== */
+
+/* Top Navigation Bar Dropdown & Badges */
+.lang-selector {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+
+.lang-selector:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+/* Active Vehicle Pill in Header */
+.active-vehicle-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.active-vehicle-pill:hover {
+  background: rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+/* Input Fields With Integrated Microphone Button */
+.input-with-mic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-mic input,
+.input-with-mic textarea {
+  width: 100%;
+  padding-right: 3rem;
+}
+
+.mic-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: var(--accent-cyan);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: var(--transition);
+  z-index: 5;
+}
+
+.mic-btn:hover {
+  background: var(--accent-cyan);
+  color: #0a0f1d;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+@keyframes micPulse {
+  0% { transform: translateY(-50%) scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: translateY(-50%) scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: translateY(-50%) scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.mic-btn.recording {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #fca5a5 !important;
+  animation: micPulse 1.5s infinite;
+}
+
+/* Voice Response Audio Player Controls */
+.voice-player-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+}
+
+.voice-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.voice-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition);
+}
+
+.voice-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.voice-btn.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border-color: var(--accent-cyan);
+}
+
+/* Dual-View Toggle (Technical View vs Simple Words) */
+.dual-view-toggle {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  background: var(--bg-card);
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  width: fit-content;
+}
+
+.dual-view-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dual-view-btn:hover {
+  color: var(--text-main);
+}
+
+.dual-view-btn.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.4);
+}
+
+/* Simple Explanation Breakdown Card */
+.simple-explanation-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.simple-section-block {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.simple-section-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.simple-sec-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.simple-sec-body {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+/* Ask Your Mechanic Question Box */
+.ask-mechanic-box {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.ask-mechanic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ask-mechanic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ask-mechanic-list li {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  padding: 0.45rem 0.75rem;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-cyan);
+  line-height: 1.45;
+}
+
+/* Problem Severity Banners */
+.severity-banner {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.severity-banner.severity-low {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid var(--accent-emerald);
+  color: #6ee7b7;
+}
+
+.severity-banner.severity-moderate {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--accent-amber);
+  color: #fcd34d;
+}
+
+.severity-banner.severity-critical {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--accent-crimson);
+  color: #fca5a5;
+  animation: pulseCrit 2s infinite;
+}
+
+@keyframes pulseCrit {
+  0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); }
+}
+
+.severity-title {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Quotation Checker Table & Status Badges */
+.quote-table-wrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.quote-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+.quote-table th {
+  background: var(--bg-secondary);
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.quote-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.quote-badge {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.quote-badge.badge-within {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--accent-emerald);
+  color: #6ee7b7;
+}
+
+.quote-badge.badge-above {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--accent-amber);
+  color: #fcd34d;
+}
+
+.quote-badge.badge-below {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: #7dd3fc;
+}
+
+.quote-badge.badge-unavailable {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--border-color);
+  color: #94a3b8;
+}
+
+/* Vehicle Management Cards */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.vehicle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  position: relative;
+  transition: var(--transition);
+}
+
+.vehicle-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.vehicle-card.is-default {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.18);
+}
+
+.vehicle-card-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+/* Maintenance Tracker */
+.maint-status-pill {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.maint-status-pill.upcoming {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.maint-status-pill.due_soon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.maint-status-pill.overdue {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.maint-status-pill.completed {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Dashboard Summary Grid */
+.dashboard-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-card .metric-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.metric-card .metric-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 0.4rem;
+}
+
+/* ==========================================================================
+   RTL LAYOUT OVERRIDES (ARABIC & URDU)
+   ========================================================================== */
+body.rtl-layout,
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, "Noto Sans Arabic", "Noto Sans", sans-serif;
+}
+
+body.rtl-layout .navbar,
+body.rtl-layout .brand,
+body.rtl-layout .nav-actions,
+body.rtl-layout .vehicle-selector {
+  flex-direction: row;
+}
+
+body.rtl-layout .tab-badge,
+body.rtl-layout .status-pill {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+body.rtl-layout .tab-btn.active::before {
+  left: auto;
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+body.rtl-layout .rag-chunk-card {
+  border-left: 1px solid var(--border-color);
+  border-right: 4px solid var(--accent-cyan);
+}
+
+body.rtl-layout .step-row {
+  flex-direction: row-reverse;
+}
+
+body.rtl-layout .input-with-mic .mic-btn {
+  right: auto;
+  left: 8px;
+}
+
+body.rtl-layout .input-with-mic input,
+body.rtl-layout .input-with-mic textarea {
+  padding-right: 1rem;
+  padding-left: 3rem;
+}
+
+body.rtl-layout .vehicle-card-badge {
+  right: auto;
+  left: 1rem;
+}
+
+body.rtl-layout .ask-mechanic-list li {
+  border-left: none;
+  border-right: 3px solid var(--accent-cyan);
+}
+
+body.rtl-layout .quote-table th,
+body.rtl-layout .quote-table td {
+  text-align: right;
+}
+

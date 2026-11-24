@@ -1,7 +1,9 @@
 import logging
 from fastapi import APIRouter, HTTPException, status
 from backend.app.schemas.rag import RAGSearchRequest, RAGSearchResponse
+from backend.app.schemas.explanation import DualViewManualResult
 from backend.app.rag.retriever import AutomotiveRetriever
+from backend.app.services.explanation_service import get_explanation_service
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +65,31 @@ async def search_automotive_knowledge(request: RAGSearchRequest) -> RAGSearchRes
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred during retrieval: {str(e)}",
         )
+
+
+@router.post(
+    "/explain",
+    response_model=DualViewManualResult,
+    status_code=status.HTTP_200_OK,
+    summary="Intelligent Manual Search with Dual View (Technical OEM & Simple Explanation)",
+    description=(
+        "Retrieves verified manual passages and generates an easy-to-understand explanation "
+        "with plain language, root causes, warning signs, safe actions, and questions for mechanics."
+    ),
+)
+async def explain_manual_query(request: RAGSearchRequest) -> DualViewManualResult:
+    try:
+        service = get_explanation_service()
+        return service.explain_query(
+            query=request.query,
+            manufacturer=request.manufacturer,
+            vehicle_model=request.vehicle_model,
+            top_k=request.top_k or 5,
+        )
+    except Exception as e:
+        logger.error("Dual view explanation error: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Manual explanation failed: {str(e)}"
+        )
+

@@ -4,271 +4,192 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoAssist AI - Automotive Diagnostic & Service Intelligence Platform</title>
-  <link rel="stylesheet" href="/static/css/styles.css?v=2.6">
+  <link rel="stylesheet" href="/static/css/styles.css?v=2.7">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
-  <script>
-    // Global Immediate View & Demo Controller (Synchronous & Bulletproof)
-    function switchStudioTab(tabId) {
-      var tabBtns = document.querySelectorAll(".tab-btn");
-      var tabPanels = document.querySelectorAll(".tab-panel");
-
-      tabBtns.forEach(function(b) {
-        if (b.getAttribute("data-tab") === tabId) {
-          b.classList.add("active");
-        } else {
-          b.classList.remove("active");
-        }
-      });
-
-      tabPanels.forEach(function(p) {
-        if (p.id === tabId) {
-          p.classList.add("active");
-          p.style.display = "block";
-        } else {
-          p.classList.remove("active");
-          p.style.display = "none";
-        }
-      });
-    }
-
-    function navigateToView(viewName, targetTabId) {
-      var viewIntro = document.getElementById("view-intro");
-      var viewStudio = document.getElementById("view-studio");
-      var navBtnIntro = document.getElementById("nav-btn-intro");
-      var navBtnStudio = document.getElementById("nav-btn-studio");
-
-      if (viewName === "studio") {
-        if (viewIntro) {
-          viewIntro.classList.remove("active");
-          viewIntro.style.display = "none";
-        }
-        if (viewStudio) {
-          viewStudio.classList.add("active");
-          viewStudio.style.display = "block";
-        }
-        if (navBtnIntro) navBtnIntro.classList.remove("active");
-        if (navBtnStudio) navBtnStudio.classList.add("active");
-
-        if (targetTabId) {
-          switchStudioTab(targetTabId);
-        } else {
-          var activeTab = document.querySelector(".tab-btn.active");
-          if (activeTab && activeTab.getAttribute("data-tab")) {
-            switchStudioTab(activeTab.getAttribute("data-tab"));
-          } else {
-            switchStudioTab("tab-rag");
-          }
-        }
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        if (viewStudio) {
-          viewStudio.classList.remove("active");
-          viewStudio.style.display = "none";
-        }
-        if (viewIntro) {
-          viewIntro.classList.add("active");
-          viewIntro.style.display = "block";
-        }
-        if (navBtnStudio) navBtnStudio.classList.remove("active");
-        if (navBtnIntro) navBtnIntro.classList.add("active");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-
-    function runDemo(demoType) {
-      if (demoType === "dtc_p0300") {
-        navigateToView("studio", "tab-dtc");
-        setTimeout(function() {
-          var input = document.getElementById("dtc-code-input");
-          var rpm = document.getElementById("ff-rpm");
-          var stft = document.getElementById("ff-stft");
-          var ltft = document.getElementById("ff-ltft");
-          var ect = document.getElementById("ff-ect");
-          var volt = document.getElementById("ff-volt");
-          var form = document.getElementById("dtc-form");
-          if (input) input.value = "P0300";
-          if (rpm) rpm.value = "750";
-          if (stft) stft.value = "3.5";
-          if (ltft) ltft.value = "18.5";
-          if (ect) ect.value = "195";
-          if (volt) volt.value = "13.8";
-          if (form) {
-            if (form.requestSubmit) form.requestSubmit();
-            else form.dispatchEvent(new Event("submit"));
-          }
-        }, 150);
-      } else if (demoType === "elec_battery") {
-        navigateToView("studio", "tab-electrical");
-        setTimeout(function() {
-          var v = document.getElementById("resting-voltage-slider");
-          var vText = document.getElementById("resting-voltage-val");
-          var c = document.getElementById("cranking-voltage-input");
-          var a = document.getElementById("alternator-voltage-input");
-          var p = document.getElementById("parasitic-draw-input");
-          var b = document.getElementById("battery-age-input");
-          var form = document.getElementById("electrical-form");
-          if (v) v.value = "10.2";
-          if (vText) vText.innerText = "10.2 V";
-          if (c) c.value = "7.6";
-          if (a) a.value = "13.2";
-          if (p) p.value = "120";
-          if (b) b.value = "4.5";
-          if (form) {
-            if (form.requestSubmit) form.requestSubmit();
-            else form.dispatchEvent(new Event("submit"));
-          }
-        }, 150);
-      } else if (demoType === "thermal_overheat") {
-        navigateToView("studio", "tab-thermal");
-        setTimeout(function() {
-          var cond = document.getElementById("thermal-condition");
-          var level = document.getElementById("thermal-coolant-level");
-          var fan = document.getElementById("thermal-fan-status");
-          var heater = document.getElementById("thermal-heater-output");
-          var hose = document.getElementById("thermal-hose-temp");
-          var smoke = document.getElementById("thermal-smoke-oil");
-          var form = document.getElementById("thermal-form");
-          if (cond) cond.value = "idle_traffic";
-          if (level) level.value = "normal";
-          if (fan) fan.value = "no_not_spinning";
-          if (heater) heater.value = "hot";
-          if (hose) hose.value = "upper_scalding_lower_cold";
-          if (smoke) smoke.checked = false;
-          if (form) {
-            if (form.requestSubmit) form.requestSubmit();
-            else form.dispatchEvent(new Event("submit"));
-          }
-        }, 150);
-      } else if (demoType === "acoustic_whine") {
-        navigateToView("studio", "tab-acoustic");
-        setTimeout(function() {
-          var type = document.getElementById("sound-type");
-          var loc = document.getElementById("sound-location");
-          var cond = document.getElementById("sound-condition");
-          var rpm = document.getElementById("sound-rpm-dep");
-          var speed = document.getElementById("sound-speed-dep");
-          var form = document.getElementById("acoustic-form");
-          if (type) type.value = "whine_hum";
-          if (loc) loc.value = "engine_front_belt";
-          if (cond) cond.value = "accelerating";
-          if (rpm) rpm.checked = true;
-          if (speed) speed.checked = false;
-          if (form) {
-            if (form.requestSubmit) form.requestSubmit();
-            else form.dispatchEvent(new Event("submit"));
-          }
-        }, 150);
-      }
-    }
-
-    window.navigateToView = navigateToView;
-    window.switchStudioTab = switchStudioTab;
-    window.runDemo = runDemo;
-  </script>
 </head>
 <body>
 
   <!-- Top Navigation Bar -->
   <header class="navbar">
-    <a href="#" class="brand" onclick="navigateToView('intro'); return false;">
+    <a href="#" class="brand" onclick="navigateToSection('dashboard'); return false;">
       <div class="brand-icon">⚡</div>
       <div class="brand-text">
-        <h1>AutoAssist AI</h1>
-        <p>Intelligent Automotive Diagnostic & Service Platform</p>
+        <h1 data-i18n="brandTitle">AutoAssist AI</h1>
+        <p data-i18n="brandSubtitle">Intelligent Automotive Diagnostic & Service Platform</p>
       </div>
     </a>
 
-    <!-- Top View Switcher -->
-    <nav class="nav-links">
-      <button id="nav-btn-intro" class="nav-link active" onclick="navigateToView('intro')">
-        🏠 Home &amp; Overview
+    <!-- Top 8 Navigation Links -->
+    <nav class="nav-links" id="main-nav-links">
+      <button type="button" class="nav-link active" data-section="dashboard" onclick="navigateToSection('dashboard')">
+        📊 <span data-i18n="navDashboard">Dashboard</span>
       </button>
-      <button id="nav-btn-studio" class="nav-link" onclick="navigateToView('studio')">
-        ⚡ Diagnostic Studio
+      <button type="button" class="nav-link" data-section="assistant" onclick="navigateToSection('assistant')">
+        🤖 <span data-i18n="navAssistant">AI Assistant</span>
+      </button>
+      <button type="button" class="nav-link" data-section="manuals" onclick="navigateToSection('manuals')">
+        🔍 <span data-i18n="navManuals">Manual Search</span>
+      </button>
+      <button type="button" class="nav-link" data-section="estimator" onclick="navigateToSection('estimator')">
+        💰 <span data-i18n="navEstimator">Cost Estimator</span>
+      </button>
+      <button type="button" class="nav-link" data-section="quotations" onclick="navigateToSection('quotations')">
+        📋 <span data-i18n="navQuotations">Quotation Checker</span>
+      </button>
+      <button type="button" class="nav-link" data-section="vehicles" onclick="navigateToSection('vehicles')">
+        🚗 <span data-i18n="navVehicles">My Vehicles</span>
+      </button>
+      <button type="button" class="nav-link" data-section="maintenance" onclick="navigateToSection('maintenance')">
+        🔧 <span data-i18n="navMaintenance">Maintenance</span>
+      </button>
+      <button type="button" class="nav-link" data-section="settings" onclick="navigateToSection('settings')">
+        ⚙️ <span data-i18n="navSettings">Settings</span>
       </button>
     </nav>
 
+    <!-- Header Actions (Vehicle, Language, Voice & Theme) -->
     <div class="nav-actions">
-      <div class="status-pill">
-        <div class="status-dot"></div>
-        <span>ONNX 384d RAG &bull; 9 Manuals Active</span>
+      <!-- Active Vehicle Quick Pill -->
+      <div id="header-active-vehicle" class="active-vehicle-pill" onclick="navigateToSection('vehicles')" title="Click to manage vehicles">
+        <span>🚗</span>
+        <span id="header-vehicle-name">Honda Civic (2022)</span>
       </div>
-      <button id="theme-toggle-btn" class="btn-icon">
+
+      <!-- Language Selector Dropdown -->
+      <select id="language-selector" class="lang-selector" aria-label="Select Language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ar">العربية (Arabic - RTL)</option>
+        <option value="ur">اردو (Urdu - RTL)</option>
+      </select>
+
+      <!-- Voice Output Toggle Button -->
+      <button type="button" id="header-voice-toggle" class="btn-icon" title="Toggle AI Voice Output">
+        🔊 Voice ON
+      </button>
+
+      <!-- Theme Toggle Button -->
+      <button type="button" id="theme-toggle-btn" class="btn-icon" title="Toggle Light/Dark Theme">
         ☀️ Light Mode
       </button>
     </div>
   </header>
 
-  <!-- ======================================================================
-       VIEW 1: Dedicated Cinematic Introductory Page (Forest Green & Sand Beige)
-       ====================================================================== -->
-  <div id="view-intro" class="view-section active">
-    <section id="cinematic-intro" class="cinematic-intro">
-      <canvas id="cinematic-canvas" class="cinematic-canvas"></canvas>
-      <div class="glow-orb orb-forest"></div>
-      <div class="glow-orb orb-sand"></div>
-      
-      <div class="intro-content">
-        <!-- HUD Top Tagline -->
-        <div class="intro-badge">
-          <span class="pulse-indicator"></span>
-          <span>NEXT-GEN VEHICLE TELEMETRY &bull; NEURAL RAG ASSISTANT</span>
-        </div>
+  <!-- Educational Purpose Top Disclaimer Banner -->
+  <div style="background: rgba(37, 99, 235, 0.12); border-bottom: 1px solid rgba(56, 189, 248, 0.25); padding: 0.45rem 1.75rem; font-size: 0.76rem; color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: center;">
+    <span>ℹ️</span>
+    <span data-i18n="disclaimerBanner">
+      AutoAssist AI provides educational insights and reference benchmarks. It does not replace certified professional mechanics.
+    </span>
+  </div>
 
-        <!-- Main Cinematic Title -->
-        <h1 class="intro-title">
-          AUTOASSIST <span class="highlight-sand">AI</span>
-        </h1>
-        <p class="intro-subtitle">
-          Intelligent Automotive Diagnostic Studio powered by sub-100ms ONNX neural vector retrieval, 
-          OEM service manuals, and multi-subsystem engineering analyzers.
-        </p>
+  <!-- Main View Sections Container -->
+  <div class="app-main-content">
 
-        <!-- Live Performance Metrics Ticker -->
-        <div class="intro-telemetry-bar">
-          <div class="telemetry-item">
-            <span class="telemetry-label">Neural Embeddings</span>
-            <span class="telemetry-value">all-MiniLM-L6-v2 (384d)</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-label">Retrieval Benchmark</span>
-            <span class="telemetry-value">100% Top-1 Precision</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-label">Indexed Manuals</span>
-            <span class="telemetry-value">9 OEM Service Guides</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-label">Subsystem Analyzers</span>
-            <span class="telemetry-value">8 Online Subsystems</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-label">Avg. Latency</span>
-            <span class="telemetry-value">&lt; 100ms Inference</span>
+    <!-- ======================================================================
+         SECTION 1: DASHBOARD
+         ====================================================================== -->
+    <section id="view-dashboard" class="view-section active">
+      <div class="app-container" style="flex-direction: column;">
+        
+        <!-- Welcome Hero & Active Vehicle Telemetry -->
+        <div class="card" style="background: var(--gradient-card); border-color: rgba(56, 189, 248, 0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <span class="status-pill" style="margin-bottom: 0.5rem; display: inline-flex;">
+                <span class="status-dot"></span>
+                <span>ONNX 384d RAG &bull; Verified Benchmarks Active</span>
+              </span>
+              <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);" data-i18n="dashVehicleSummary">Vehicle Profile & Telemetry</h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="corePhilosophy">
+                Know Your Vehicle. Understand Your Repairs. Make Informed Decisions.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" class="btn-primary" onclick="navigateToSection('assistant')">
+                🤖 <span data-i18n="navAssistant">AI Assistant</span>
+              </button>
+              <button type="button" class="btn-icon" onclick="navigateToSection('manuals')">
+                🔍 <span data-i18n="navManuals">Manual Search</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Primary CTA Actions -->
-        <div class="intro-actions">
-          <button id="enter-studio-btn" class="btn-cinematic-primary" onclick="navigateToView('studio')">
-            <span>Launch Diagnostic Studio</span>
-            <span class="btn-arrow">&rarr;</span>
-          </button>
-          <button id="quick-wizard-btn" class="btn-cinematic-secondary" onclick="navigateToView('studio', 'tab-wizard')">
-            <span>🧙 Start Guided Wizard</span>
-          </button>
-          <button id="quick-rag-btn" class="btn-cinematic-secondary" onclick="navigateToView('studio', 'tab-rag')">
-            <span>🔍 Manuals RAG Search</span>
-          </button>
+        <!-- 4 Metric Cards Grid -->
+        <div class="dashboard-metrics-grid">
+          <div class="metric-card" onclick="navigateToSection('vehicles')" style="cursor: pointer;">
+            <span class="metric-label" data-i18n="activeVehicleLabel">Active Vehicle</span>
+            <span class="metric-val" id="dash-metric-vehicle">Honda Civic</span>
+            <span style="font-size: 0.75rem; color: var(--accent-cyan); margin-top: 0.25rem;" id="dash-metric-odo">45,000 km &bull; 2022 Petrol</span>
+          </div>
+
+          <div class="metric-card" onclick="navigateToSection('maintenance')" style="cursor: pointer;">
+            <span class="metric-label" data-i18n="dashUpcomingMaint">Upcoming Maintenance Alerts</span>
+            <span class="metric-val" id="dash-metric-maint-count" style="color: var(--accent-amber);">1 Due Soon</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">Next: Engine Oil & Filter</span>
+          </div>
+
+          <div class="metric-card" onclick="navigateToSection('estimator')" style="cursor: pointer;">
+            <span class="metric-label">Pricing Benchmarks</span>
+            <span class="metric-val" style="color: var(--accent-emerald);">19 Verified</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">Spare Parts & Labor in ₹ (INR)</span>
+          </div>
+
+          <div class="metric-card" onclick="navigateToSection('manuals')" style="cursor: pointer;">
+            <span class="metric-label">Technical Manuals</span>
+            <span class="metric-val" style="color: var(--accent-cyan);">129 Chunks</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">9 OEM Factory Service Guides</span>
+          </div>
         </div>
 
-        <!-- Quick 1-Click Interactive Diagnostic Demos -->
-        <div class="intro-demos-section">
-          <div class="intro-demos-title">⚡ Try Quick 1-Click Diagnostic Demos</div>
+        <!-- 4 Quick Action Diagnostic Cards -->
+        <div class="intro-grid" style="margin-bottom: 2rem;">
+          <div class="intro-card" onclick="navigateToSection('assistant')">
+            <div class="card-icon">🎙️</div>
+            <h3 data-i18n="dashQuickVoice">Quick Voice Diagnostic</h3>
+            <p data-i18n="dashQuickVoiceDesc">Press the microphone to describe strange sounds, dashboard warnings, or performance issues in your preferred language.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Web Speech API</span>
+              <button type="button" class="card-action-btn">Speak Now &rarr;</button>
+            </div>
+          </div>
+
+          <div class="intro-card" onclick="navigateToSection('manuals')">
+            <div class="card-icon">📖</div>
+            <h3 data-i18n="navManuals">Manual Search & Dual View</h3>
+            <p>Read dense OEM service procedures alongside plain-language explanations structured for everyday drivers.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Simple Words Mode</span>
+              <button type="button" class="card-action-btn">Search &rarr;</button>
+            </div>
+          </div>
+
+          <div class="intro-card" onclick="navigateToSection('quotations')">
+            <div class="card-icon">📋</div>
+            <h3 data-i18n="dashQuoteCheck">Evaluate Mechanic Quotation</h3>
+            <p data-i18n="dashQuoteCheckDesc">Compare garage quotes against verified spare parts and labor benchmarks before approving repairs.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">Fair Price Check</span>
+              <button type="button" class="card-action-btn">Check Quote &rarr;</button>
+            </div>
+          </div>
+
+          <div class="intro-card" onclick="navigateToSection('estimator')">
+            <div class="card-icon">💰</div>
+            <h3 data-i18n="navEstimator">Repair Cost Estimator</h3>
+            <p>Calculate realistic repair ranges in Indian Rupees (₹) customized by vehicle model, age, and local city labor rates.</p>
+            <div class="card-bottom-row">
+              <span class="card-badge">INR Breakdown</span>
+              <button type="button" class="card-action-btn">Estimate &rarr;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-Click Interactive Diagnostic Scenarios -->
+        <div class="intro-demos-section" style="margin-bottom: 2rem;">
+          <div class="intro-demos-title">⚡ Try 1-Click Diagnostic Simulations</div>
           <p class="intro-demos-subtitle">Test real automotive failure scenarios instantly — clicks directly launch and compute live diagnostics:</p>
           <div class="demo-buttons-grid">
             <button type="button" class="demo-btn" onclick="runDemo('dtc_p0300')">
@@ -294,809 +215,1003 @@
           </div>
         </div>
 
-        <!-- 3-Step Engineering Diagnostic Pipeline -->
-        <div class="intro-how-it-works">
-          <div class="how-heading">ENGINEERING DIAGNOSTIC PIPELINE</div>
-          <div class="how-steps-grid">
-            <div class="how-step-card">
-              <div class="step-badge">STAGE 01 &bull; INGESTION</div>
-              <h3>Telemetry & Symptom Capture</h3>
-              <p>Scan OBD-II trouble codes (DTCs), multimeter electrical levels, thermodynamic delta-T, or acoustic vibration signatures.</p>
-            </div>
-            <div class="how-step-card">
-              <div class="step-badge">STAGE 02 &bull; INFERENCE</div>
-              <h3>Neural RAG & Physics Engine</h3>
-              <p>Dense 384-dimensional ONNX vector retrieval across 9 factory OEM manuals paired with deterministic mechanical physics models.</p>
-            </div>
-            <div class="how-step-card">
-              <div class="step-badge">STAGE 03 &bull; ACTION</div>
-              <h3>Root Causes, Checklist & INR Pricing</h3>
-              <p>Ranked probabilities, step-by-step OEM repair checklist, required tools, and industry benchmark DIY vs Pro shop costs in ₹.</p>
-            </div>
-          </div>
-        </div>
+      </div>
+    </section>
 
-        <!-- Subsystem Capabilities Grid -->
-        <div class="intro-features-heading">
-          <span>8 SPECIALIZED DIAGNOSTIC SUBSYSTEMS</span>
-        </div>
-        <div class="intro-grid">
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-dtc')">
-            <div class="card-icon">⚡</div>
-            <h3>OBD-II DTC Scanner</h3>
-            <p>Instant fault code translation, severity rating, root cause probability, and repair plans.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">ECU / PCM / TCM</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-dtc'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-electrical')">
-            <div class="card-icon">🔋</div>
-            <h3>Electrical Multimeter</h3>
-            <p>Resting battery voltage, starter crank drop, alternator diode ripple & parasitic draw analysis.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">12V / 48V Charging</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-electrical'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-acoustic')">
-            <div class="card-icon">🔊</div>
-            <h3>NVH Sound Identifier</h3>
-            <p>Spectral frequency matching for whines, knocks, clicks, squeals and wheel hub harmonics.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">Acoustic Harmonics</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-acoustic'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-thermal')">
-            <div class="card-icon">🌡️</div>
-            <h3>Cooling & Thermal</h3>
-            <p>Head gasket pressure test, thermostat flow cycle, radiator delta-T, and fan duty cycle.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">Thermodynamics</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-thermal'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-brake')">
-            <div class="card-icon">🛑</div>
-            <h3>Brake Safety & Wear</h3>
-            <p>Rotor runout DTV, caliper piston slide friction, brake fade coefficient & ABS valve bleed.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">Hydraulics & Safety</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-brake'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-drivetrain')">
-            <div class="card-icon">⚙️</div>
-            <h3>Drivetrain & Transmission</h3>
-            <p>Clutch slip ratio, torque converter lockup, shudder, diff lash & shift solenoid response.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">Powertrain Mechanical</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-drivetrain'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-emissions')">
-            <div class="card-icon">💨</div>
-            <h3>Fuel Trim & Emissions</h3>
-            <p>STFT/LTFT mixture calculation, MAF g/s correlation, O2 switching speed & EVAP leak tests.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">EPA / Euro-6 OBD</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-emissions'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-          <div class="intro-card" onclick="navigateToView('studio', 'tab-wizard')">
-            <div class="card-icon">🧙</div>
-            <h3>Guided Diagnostic Wizard</h3>
-            <p>Adaptive symptom trees that isolate complex multi-system vehicle faults step-by-step.</p>
-            <div class="card-bottom-row">
-              <span class="card-badge">Interactive Triage</span>
-              <button type="button" class="card-action-btn" onclick="navigateToView('studio', 'tab-wizard'); event.stopPropagation();">Launch &rarr;</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom CTA Banner -->
-        <div class="intro-cta-banner">
-          <h2>Ready to Troubleshoot Your Vehicle?</h2>
-          <p>Access the full diagnostic studio, query vectorized service manuals, or execute specialized physics-based analyzers.</p>
-          <button type="button" class="btn-cinematic-primary" onclick="navigateToView('studio')">
-            <span>Enter Diagnostic Studio</span>
-            <span class="btn-arrow">&rarr;</span>
+    <!-- ======================================================================
+         SECTION 2: AI ASSISTANT & 8 DIAGNOSTIC ANALYZERS
+         ====================================================================== -->
+    <section id="view-assistant" class="view-section">
+      <div class="app-container">
+        <!-- Sidebar Navigation for Analyzers -->
+        <aside class="sidebar">
+          <div class="nav-section-title">AI Assistant & Telemetry</div>
+          <button type="button" class="tab-btn active" data-tab="tab-assistant-chat" onclick="switchStudioTab('tab-assistant-chat')">
+            <span class="tab-icon">🤖</span>
+            <span>Intelligent Chatbot</span>
+            <span class="tab-badge">Voice Ready</span>
           </button>
-        </div>
 
-        <div class="intro-footer-hint">
-          <span>Click any card, demo, or button above to start diagnosing immediately &bull; Switch between Overview and Studio anytime</span>
+          <div class="nav-section-title" style="margin-top: 0.75rem;">Specialized Diagnostic Tools</div>
+          <button type="button" class="tab-btn" data-tab="tab-dtc" onclick="switchStudioTab('tab-dtc')">
+            <span class="tab-icon">⚡</span>
+            <span>OBD-II DTC Scanner</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-electrical" onclick="switchStudioTab('tab-electrical')">
+            <span class="tab-icon">🔋</span>
+            <span>Electrical Multimeter</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-thermal" onclick="switchStudioTab('tab-thermal')">
+            <span class="tab-icon">🌡️</span>
+            <span>Cooling & Overheating</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-acoustic" onclick="switchStudioTab('tab-acoustic')">
+            <span class="tab-icon">🔊</span>
+            <span>NVH Sound Identifier</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-brake" onclick="switchStudioTab('tab-brake')">
+            <span class="tab-icon">🛑</span>
+            <span>Braking Safety & Wear</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-drivetrain" onclick="switchStudioTab('tab-drivetrain')">
+            <span class="tab-icon">⚙️</span>
+            <span>Transmission & Drivetrain</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-emissions" onclick="switchStudioTab('tab-emissions')">
+            <span class="tab-icon">💨</span>
+            <span>Fuel Trim & Emissions</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="tab-wizard" onclick="switchStudioTab('tab-wizard')">
+            <span class="tab-icon">🧙</span>
+            <span>Guided Problem Wizard</span>
+          </button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+          
+          <!-- Tab 1: AI Assistant Chat & Voice Interaction -->
+          <div id="tab-assistant-chat" class="tab-panel active">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🤖 AutoAssist AI Diagnostic Conversational Agent</h2>
+                  <p class="card-desc">
+                    Describe any vehicle symptom by typing or speaking in your language. Assesses mechanical severity, consults factory manuals, and provides clear explanations.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Chat Input Form with Voice Button -->
+              <form id="assistant-chat-form" style="margin-top: 1rem;">
+                <div class="input-with-mic">
+                  <input
+                    type="text"
+                    id="assistant-input"
+                    class="text-input"
+                    placeholder="e.g., 'Engine is overheating in traffic with white smoke from exhaust'..."
+                    style="height: 48px; font-size: 0.95rem;"
+                    required
+                  >
+                  <button type="button" id="assistant-mic-btn" class="mic-btn" title="Click to speak your vehicle symptom">
+                    🎤
+                  </button>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div class="quick-chips" style="margin: 0;">
+                    <span style="font-size: 0.72rem; color: var(--text-dim);">Examples:</span>
+                    <button type="button" class="chip assist-chip" data-q="Engine overheating rapidly with bubbling coolant">Overheating & Bubbling</button>
+                    <button type="button" class="chip assist-chip" data-q="Brake pedal sinking to floor when stopped">Brake Pedal Sinking</button>
+                    <button type="button" class="chip assist-chip" data-q="High-pitched squeal when accelerating in morning">Serpentine Belt Squeal</button>
+                    <button type="button" class="chip assist-chip" data-q="Rapid clicking sound when turning key won't start">Dead Battery Clicking</button>
+                  </div>
+                  <button type="submit" class="btn-primary" style="padding: 0.6rem 1.4rem;">
+                    Analyze Vehicle Issue &rarr;
+                  </button>
+                </div>
+              </form>
+
+              <!-- Dynamic Severity Banner Container -->
+              <div id="assistant-severity-container" style="margin-top: 1.5rem; display: none;"></div>
+
+              <!-- Diagnostic Result Container -->
+              <div id="assistant-result-container" style="margin-top: 1rem;"></div>
+            </div>
+          </div>
+
+          <!-- Tab 2: OBD-II / DTC Scanner Panel -->
+          <div id="tab-dtc" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">⚡ OBD-II Diagnostic Trouble Code (DTC) Scanner</h2>
+                  <p class="card-desc">Decodes Powertrain (P), Chassis (C), Body (B), and Network (U) trouble codes with freeze-frame telemetry interpretation.</p>
+                </div>
+              </div>
+
+              <div class="quick-chips">
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Quick Codes:</span>
+                <button type="button" class="chip dtc-quick-code" data-code="P0300">P0300 (Random Misfire)</button>
+                <button type="button" class="chip dtc-quick-code" data-code="P0171">P0171 (System Too Lean)</button>
+                <button type="button" class="chip dtc-quick-code" data-code="P0420">P0420 (Catalyst Efficiency)</button>
+                <button type="button" class="chip dtc-quick-code" data-code="P0128">P0128 (Thermostat Stuck Open)</button>
+                <button type="button" class="chip dtc-quick-code" data-code="P0455">P0455 (EVAP Gross Leak)</button>
+              </div>
+
+              <form id="dtc-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">DTC Trouble Code *</label>
+                    <input type="text" id="dtc-code-input" class="text-input" placeholder="e.g. P0300 or P0171" required style="font-family: monospace; font-size: 1rem; text-transform: uppercase;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Freeze-Frame Engine RPM</label>
+                    <input type="number" id="ff-rpm" class="text-input" placeholder="e.g. 750 (idle) or 2400">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Short Term Fuel Trim (STFT %)</label>
+                    <input type="number" step="0.1" id="ff-stft" class="text-input" placeholder="e.g. +3.5 or -8.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Long Term Fuel Trim (LTFT %)</label>
+                    <input type="number" step="0.1" id="ff-ltft" class="text-input" placeholder="e.g. +21.0 or -5.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Engine Coolant Temp (°F)</label>
+                    <input type="number" id="ff-ect" class="text-input" placeholder="e.g. 195">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Battery Voltage at Trigger (V)</label>
+                    <input type="number" step="0.1" id="ff-volt" class="text-input" placeholder="e.g. 13.8">
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Run Comprehensive DTC Analysis</button>
+              </form>
+              <div id="dtc-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Electrical Multimeter Panel -->
+          <div id="tab-electrical" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🔋 Starting, Charging & Multimeter Analyzer</h2>
+                  <p class="card-desc">Calculates battery State-of-Charge (SoC%), starter cranking voltage drop, alternator regulation, and parasitic key-off drain.</p>
+                </div>
+              </div>
+              <form id="electrical-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Resting Battery Voltage (Engine OFF) <span id="resting-voltage-val" class="val-hint">12.6 V</span></label>
+                    <input type="range" id="resting-voltage-slider" class="range-slider" min="10.0" max="13.2" step="0.05" value="12.6">
+                    <span style="font-size: 0.7rem; color: var(--text-dim);">12.66V = 100% | 12.24V = 50% | &lt;11.9V = Dead</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Minimum Cranking Voltage (Engine Start)</label>
+                    <input type="number" step="0.1" id="cranking-voltage-input" class="text-input" value="10.2">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Alternator Running Voltage (Loads ON)</label>
+                    <input type="number" step="0.1" id="alternator-voltage-input" class="text-input" value="14.2">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Key-Off Parasitic Standby Drain (mA)</label>
+                    <input type="number" step="1" id="parasitic-draw-input" class="text-input" value="35">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Battery Age (Years)</label>
+                    <input type="number" step="0.5" id="battery-age-input" class="text-input" value="2.5">
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Compute Electrical Health Verdict</button>
+              </form>
+              <div id="electrical-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 4: Cooling & Thermal Panel -->
+          <div id="tab-thermal" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🌡️ Engine Overheating & Cooling System Investigator</h2>
+                  <p class="card-desc">Pinpoints thermal failures: Stuck Thermostat, Fan Motor Relay, Clogged Radiator, Water Pump Impeller, or Blown Head Gasket.</p>
+                </div>
+              </div>
+              <form id="thermal-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">When does overheating occur?</label>
+                    <select id="thermal-condition" class="select-input">
+                      <option value="idle_traffic">At idle / in heavy stop-and-go traffic</option>
+                      <option value="highway_speed">At cruising speeds (50-70 MPH) on highway</option>
+                      <option value="all_times_rapid">Immediately / within 5 minutes of cold start</option>
+                      <option value="climbing_hills">Only when climbing hills or under heavy load</option>
+                      <option value="erratic_spikes">Erratic needle spikes (bounces hot and cold)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Coolant Level in Reservoir</label>
+                    <select id="thermal-coolant-level" class="select-input">
+                      <option value="normal">Normal / Full</option>
+                      <option value="low_with_visible_puddle">Low with visible puddle under car</option>
+                      <option value="low_no_puddle">Low but NO visible puddles anywhere</option>
+                      <option value="empty">Completely empty</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Electric Radiator Fan Operation</label>
+                    <select id="thermal-fan-status" class="select-input">
+                      <option value="unknown">Unknown / Not checked</option>
+                      <option value="yes_high_speed">Yes, spinning on high speed when hot</option>
+                      <option value="no_not_spinning">No, fan is completely motionless while hot</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Cabin Interior Heater Vent Output</label>
+                    <select id="thermal-heater-output" class="select-input">
+                      <option value="hot">Blows scalding hot air normally</option>
+                      <option value="lukewarm_or_cold">Blows lukewarm or ice-cold air (No flow!)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Radiator Hose Temperature Difference</label>
+                    <select id="thermal-hose-temp" class="select-input">
+                      <option value="unknown">Unknown</option>
+                      <option value="both_hot">Both upper and lower hoses are hot</option>
+                      <option value="upper_scalding_lower_cold">Upper hose scalding hot, lower hose is cold</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="justify-content: center;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
+                      <input type="checkbox" id="thermal-smoke-oil" style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
+                      <span>Sweet white exhaust smoke OR milky oil foam</span>
+                    </label>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Isolate Cooling System Fault</button>
+              </form>
+              <div id="thermal-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 5: Acoustic NVH Panel -->
+          <div id="tab-acoustic" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🔊 NVH Sound & Vibration Acoustic Identifier</h2>
+                  <p class="card-desc">Classifies squeals, grinding, clicking, knocking, and whines based on frequency, location, and driving condition.</p>
+                </div>
+              </div>
+              <form id="acoustic-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Sound Category</label>
+                    <select id="sound-type" class="select-input">
+                      <option value="squeal_chirp">High-pitched squeal / chirp (Belts, brake wear tab)</option>
+                      <option value="grind_metal">Harsh metallic grinding (Brake backing plate, bearing)</option>
+                      <option value="click_tick">Fast clicking / ticking (CV axle, lifter, blend door)</option>
+                      <option value="knock_thump">Deep rhythmic knocking (Rod bearing, piston slap)</option>
+                      <option value="whine_hum">High-pitched whine or roaring hum (Wheel bearing, pump)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Sound Physical Location</label>
+                    <select id="sound-location" class="select-input">
+                      <option value="front_wheel_brakes">Front wheel well / brakes</option>
+                      <option value="engine_front_belt">Front of engine (accessory belts/pulleys)</option>
+                      <option value="engine_internal_block">Deep inside engine block / oil pan</option>
+                      <option value="steering_suspension">Front suspension when turning</option>
+                      <option value="transmission_tunnel">Center console / transmission tunnel</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Operating Condition When Heard</label>
+                    <select id="sound-condition" class="select-input">
+                      <option value="when_braking">Only when applying brake pedal</option>
+                      <option value="when_turning">Accelerating through sharp corners/turns</option>
+                      <option value="over_bumps">Driving over rough road, bumps, or potholes</option>
+                      <option value="cold_start">First 2-3 minutes of cold morning startup</option>
+                      <option value="accelerating">Pressing accelerator pedal under load</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="justify-content: center; gap: 0.6rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
+                      <input type="checkbox" id="sound-speed-dep" style="accent-color: var(--accent-cyan);">
+                      <span>Pitch speeds up with Vehicle Road Speed</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
+                      <input type="checkbox" id="sound-rpm-dep" style="accent-color: var(--accent-cyan);">
+                      <span>Pitch speeds up with Engine RPM (even in Park)</span>
+                    </label>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Identify Failing Mechanical Component</button>
+              </form>
+              <div id="acoustic-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 6: Brake Safety Panel -->
+          <div id="tab-brake" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🛑 Brake System Safety & Wear Evaluator</h2>
+                  <p class="card-desc">Calculates brake pad wear threshold, hydraulic pedal firmness, rotor lateral runout, and DOT fluid boiling risk.</p>
+                </div>
+              </div>
+              <form id="brake-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Brake Pad Friction Thickness (mm) <span id="brake-pad-val" class="val-hint" style="color: var(--accent-amber);">3.0 mm (CAUTION)</span></label>
+                    <input type="range" id="brake-pad-slider" class="range-slider" min="1.0" max="12.0" step="0.5" value="3.0">
+                    <span style="font-size: 0.7rem; color: var(--text-dim);">&gt;6mm = Healthy | 3-4mm = Service Soon | &le;2mm = DANGER</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Pedal Travel & Firmness</label>
+                    <select id="brake-pedal-feel" class="select-input">
+                      <option value="normal_firm">Firm and normal response</option>
+                      <option value="spongy_soft">Spongy / soft (requires pumping to stop)</option>
+                      <option value="sinks_to_floor">Pedal slowly sinks to floorboard at traffic light</option>
+                      <option value="hard_high_effort">Rock hard pedal (requires extreme leg effort)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Brake Rotor Surface</label>
+                    <select id="brake-rotor-cond" class="select-input">
+                      <option value="smooth">Smooth mirror face</option>
+                      <option value="warped_pulsating">Pulsating / shaking steering wheel at 50 MPH</option>
+                      <option value="grooved_scored">Deep gouges or metal scoring grooves</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Braking Direction Tracking</label>
+                    <select id="brake-pull" class="select-input">
+                      <option value="none">Vehicle stops in straight line</option>
+                      <option value="pulls_left">Pulls hard to the left</option>
+                      <option value="pulls_right">Pulls hard to the right</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Evaluate Braking Road Safety</button>
+              </form>
+              <div id="brake-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 7: Transmission Panel -->
+          <div id="tab-drivetrain" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">⚙️ Transmission & Drivetrain Health Analyzer</h2>
+                  <p class="card-desc">Diagnoses automatic transmissions, CVTs, manuals, torque converter shudder, and fluid contamination.</p>
+                </div>
+              </div>
+              <form id="drivetrain-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Transmission Architecture</label>
+                    <select id="trans-type" class="select-input">
+                      <option value="automatic_torque_converter">Hydraulic Automatic (with Torque Converter)</option>
+                      <option value="cvt_continuously_variable">Continuously Variable Transmission (CVT)</option>
+                      <option value="manual_clutch">Manual Transmission (Dry Clutch Disc)</option>
+                      <option value="dual_clutch_dct">Dual-Clutch Transmission (DCT)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Shifting Symptom</label>
+                    <select id="trans-symptom" class="select-input">
+                      <option value="slipping_rpm_flares">Engine revs flare up without acceleration (Slipping)</option>
+                      <option value="shudder_at_cruising_speed">Rumble-strip shudder at 35-50 MPH cruising</option>
+                      <option value="harsh_shift_jerk">Hard bang / violent jolt shifting into Drive or Reverse</option>
+                      <option value="delayed_drive_reverse">2-3 second delay before gear engages from Park</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fluid Color on Dipstick</label>
+                    <select id="trans-fluid-color" class="select-input">
+                      <option value="cherry_red_clean">Cherry Red & Translucent (Fresh / Healthy)</option>
+                      <option value="translucent_brown">Light Brown (Service interval approaching)</option>
+                      <option value="dark_burnt_black">Pitch Black & Burnt Acrid Odor (Clutch wear)</option>
+                      <option value="milky_strawberry_shake">Milky Pink Strawberry Milkshake (Coolant leak!)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Transmission Fluid Level</label>
+                    <select id="trans-fluid-level" class="select-input">
+                      <option value="normal">Normal / Within Hot Hashmarks</option>
+                      <option value="low">Low (Below cold minimum)</option>
+                      <option value="overfilled">Overfilled (Aeration risk)</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Analyze Drivetrain Health</button>
+              </form>
+              <div id="drivetrain-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 8: Emissions Panel -->
+          <div id="tab-emissions" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">💨 Fuel Trim, Economy & Emissions Analyzer</h2>
+                  <p class="card-desc">Calculates stoichiometric fuel imbalances, vacuum leaks vs MAF contamination, and tailpipe smoke colors.</p>
+                </div>
+              </div>
+              <form id="emissions-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Short Term Fuel Trim at Idle (STFT %)</label>
+                    <input type="number" step="0.5" id="em-stft-idle" class="text-input" value="3.5">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Long Term Fuel Trim at Idle (LTFT %)</label>
+                    <input type="number" step="0.5" id="em-ltft-idle" class="text-input" value="18.5">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">STFT at 2,500 RPM (Cruise)</label>
+                    <input type="number" step="0.5" id="em-stft-2500" class="text-input" value="1.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">LTFT at 2,500 RPM (Cruise)</label>
+                    <input type="number" step="0.5" id="em-ltft-2500" class="text-input" value="4.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Exhaust Smoke Color</label>
+                    <select id="em-exhaust-smoke" class="select-input">
+                      <option value="none">No visible smoke (Clear exhaust)</option>
+                      <option value="black_unburned_fuel">Black smoke / soot (Rich running unburned fuel)</option>
+                      <option value="blue_burning_oil">Blue-gray haze (Burning oil)</option>
+                      <option value="white_sweet_coolant">Thick white sweet vapor (Coolant in cylinder)</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">Compute Stoichiometric Combustion Health</button>
+              </form>
+              <div id="emissions-result-box" class="result-card"></div>
+            </div>
+          </div>
+
+          <!-- Tab 9: Guided Problem Wizard -->
+          <div id="tab-wizard" class="tab-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">🧙 Multi-Step Interactive Diagnostic Wizard</h2>
+                  <p class="card-desc">Follow an intelligent interactive troubleshooting tree that narrows down root causes through targeted symptom questions.</p>
+                </div>
+              </div>
+              <div id="wizard-stage-domains">
+                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Select Your Core Vehicle Issue:</h3>
+                <div class="wizard-options-grid">
+                  <button class="wizard-opt-btn wizard-domain-btn" data-domain="no_start">
+                    <span style="font-size: 1.5rem;">🔌</span>
+                    <span class="opt-title">Engine Won't Start / No Crank</span>
+                    <span class="opt-hint">Rapid clicking, dead silence, or cranks fast without starting</span>
+                  </button>
+                  <button class="wizard-opt-btn wizard-domain-btn" data-domain="overheating">
+                    <span style="font-size: 1.5rem;">🌡️</span>
+                    <span class="opt-title">Engine Overheating / Steam</span>
+                    <span class="opt-hint">Temperature gauge in red, bubbling coolant, hot at idle</span>
+                  </button>
+                  <button class="wizard-opt-btn wizard-domain-btn" data-domain="abnormal_noise">
+                    <span style="font-size: 1.5rem;">🔊</span>
+                    <span class="opt-title">Abnormal Noise or Vibration</span>
+                    <span class="opt-hint">Squealing, grinding, rhythmic clicking on turns, deep knock</span>
+                  </button>
+                  <button class="wizard-opt-btn wizard-domain-btn" data-domain="braking_issues">
+                    <span style="font-size: 1.5rem;">🛑</span>
+                    <span class="opt-title">Braking Weakness or Shaking</span>
+                    <span class="opt-hint">Spongy pedal, sinking to floor, steering shake during stop</span>
+                  </button>
+                </div>
+              </div>
+              <div id="wizard-stage-questions" style="display: none;">
+                <div id="wizard-question-content"></div>
+              </div>
+              <div id="wizard-result-box" class="result-card"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
-  </div>
 
-  <!-- ======================================================================
-       VIEW 2: Dedicated Diagnostic Studio Workspace
-       ====================================================================== -->
-  <div id="view-studio" class="view-section">
-
-  <!-- Vehicle Selection Bar -->
-  <div class="vehicle-bar">
-    <div class="vehicle-selector">
-      <label for="vehicle-make">Vehicle Profile:</label>
-      <select id="vehicle-make" class="select-input">
-        <option value="Honda" selected>Honda</option>
-        <option value="Toyota">Toyota</option>
-        <option value="Ford">Ford</option>
-        <option value="Generic">Generic / All Makes</option>
-      </select>
-      <select id="vehicle-model" class="select-input">
-        <option value="Civic" selected>Civic</option>
-        <option value="Accord">Accord</option>
-        <option value="Corolla">Corolla</option>
-        <option value="Camry">Camry</option>
-        <option value="Generic">Standard Powertrain</option>
-      </select>
-      <select id="vehicle-year" class="select-input">
-        <option value="2024">2024</option>
-        <option value="2023">2023</option>
-        <option value="2022" selected>2022</option>
-        <option value="2020">2020</option>
-        <option value="2018">2018</option>
-      </select>
-      <input type="number" id="vehicle-mileage" class="text-input" value="45000" style="width: 100px;" placeholder="Mileage">
-      <span style="color: var(--text-dim);">miles</span>
-    </div>
-
-    <div style="color: var(--text-dim); font-size: 0.78rem;">
-      Subsystem Analyzers: <strong>8 Online</strong> &bull; Interactive Wizard: <strong>Ready</strong>
-    </div>
-  </div>
-
-  <!-- App Layout Container -->
-  <main class="app-container">
-    <!-- Sidebar Tabs Navigation -->
-    <aside class="sidebar">
-      <div class="nav-section-title">Knowledge & Retrieval</div>
-      <button type="button" class="tab-btn active" data-tab="tab-rag" onclick="switchStudioTab('tab-rag')">
-        <span class="tab-icon">🔍</span>
-        <span>Manuals RAG Search</span>
-        <span class="tab-badge">Sub-100ms</span>
-      </button>
-
-      <div class="nav-section-title" style="margin-top: 0.5rem;">Diagnostic Analyzers</div>
-      <button type="button" class="tab-btn" data-tab="tab-dtc" onclick="switchStudioTab('tab-dtc')">
-        <span class="tab-icon">⚡</span>
-        <span>OBD-II DTC Scanner</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-electrical" onclick="switchStudioTab('tab-electrical')">
-        <span class="tab-icon">🔋</span>
-        <span>Electrical Multimeter</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-thermal" onclick="switchStudioTab('tab-thermal')">
-        <span class="tab-icon">🌡️</span>
-        <span>Cooling & Overheating</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-acoustic" onclick="switchStudioTab('tab-acoustic')">
-        <span class="tab-icon">🔊</span>
-        <span>NVH Sound Identifier</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-brake" onclick="switchStudioTab('tab-brake')">
-        <span class="tab-icon">🛑</span>
-        <span>Braking Safety & Wear</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-drivetrain" onclick="switchStudioTab('tab-drivetrain')">
-        <span class="tab-icon">⚙️</span>
-        <span>Transmission & Drivetrain</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-emissions" onclick="switchStudioTab('tab-emissions')">
-        <span class="tab-icon">💨</span>
-        <span>Fuel Trim & Emissions</span>
-      </button>
-
-      <div class="nav-section-title" style="margin-top: 0.5rem;">Guided Workflow & Costs</div>
-      <button type="button" class="tab-btn" data-tab="tab-wizard" onclick="switchStudioTab('tab-wizard')">
-        <span class="tab-icon">🧙</span>
-        <span>Guided Problem Wizard</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="tab-pricing" onclick="switchStudioTab('tab-pricing')">
-        <span class="tab-icon">💰</span>
-        <span>Repair Cost Benchmarks</span>
-      </button>
-    </aside>
-
-    <!-- Main Content Panels -->
-    <section class="content-area">
-
-      <!-- 1. RAG Knowledge Search Panel -->
-      <div id="tab-rag" class="tab-panel active">
+    <!-- ======================================================================
+         SECTION 3: INTELLIGENT MANUAL SEARCH WITH DUAL VIEW
+         ====================================================================== -->
+    <section id="view-manuals" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
         <div class="card">
           <div class="card-header">
             <div>
-              <h2 class="card-title">🔍 Semantic Automotive Service Manual Retrieval</h2>
+              <h2 class="card-title" data-i18n="navManuals">🔍 Intelligent Service Manual Retrieval & Simple Explanations</h2>
               <p class="card-desc">
-                Queries 129 indexed chunks from official automotive service manuals via local 384-dimensional ONNX vector embeddings.
+                Queries dense factory OEM service manuals via 384-dimensional ONNX vector embeddings and generates structured, plain-language explanations for everyday vehicle owners.
               </p>
             </div>
           </div>
 
-          <form id="rag-search-form" class="rag-search-box">
-            <input
-              type="text"
-              id="rag-query-input"
-              class="rag-search-input"
-              placeholder="Describe your vehicle symptom, error code, or repair procedure (e.g. 'What causes engine to overheat at idle?')..."
-              required
-            >
-            <button type="submit" class="btn-primary">
-              Search Knowledge Base
+          <!-- Dual-View Toggle Controller -->
+          <div class="dual-view-toggle">
+            <button type="button" id="btn-view-simple" class="dual-view-btn active" onclick="switchManualView('simple')">
+              💡 <span data-i18n="explainSimpleBtn">Explain in Simple Words</span>
             </button>
-          </form>
-
-          <div class="quick-chips">
-            <span style="font-size: 0.75rem; color: var(--text-dim); margin-right: 0.25rem;">Popular Queries:</span>
-            <button type="button" class="chip rag-quick-chip" data-query="What can cause an engine to overheat?">Engine Overheating</button>
-            <button type="button" class="chip rag-quick-chip" data-query="Battery dead clicking sound won't start">Dead Battery Clicking</button>
-            <button type="button" class="chip rag-quick-chip" data-query="Brake pedal spongy and sinks to floor">Brake Pedal Sinking</button>
-            <button type="button" class="chip rag-quick-chip" data-query="P0300 random misfire diagnosis spark coils">Misfire P0300</button>
-            <button type="button" class="chip rag-quick-chip" data-query="Transmission shudder vibration at 40 MPH torque converter">Transmission Shudder</button>
-            <button type="button" class="chip rag-quick-chip" data-query="Wheel bearing humming noise when turning">Wheel Bearing Roar</button>
-            <button type="button" class="chip rag-quick-chip" data-query="A/C blowing warm air at idle cold on highway">A/C Warm at Idle</button>
-          </div>
-
-          <div id="rag-results" style="margin-top: 1.5rem;"></div>
-        </div>
-      </div>
-
-      <!-- 2. OBD-II / DTC Scanner Panel -->
-      <div id="tab-dtc" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">⚡ OBD-II Diagnostic Trouble Code (DTC) Scanner</h2>
-              <p class="card-desc">
-                Decodes Powertrain (P), Chassis (C), Body (B), and Network (U) trouble codes with freeze-frame telemetry interpretation.
-              </p>
-            </div>
-          </div>
-
-          <div class="quick-chips">
-            <span style="font-size: 0.75rem; color: var(--text-dim);">Quick Codes:</span>
-            <button type="button" class="chip dtc-quick-code" data-code="P0300">P0300 (Random Misfire)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="P0171">P0171 (System Too Lean)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="P0420">P0420 (Catalyst Efficiency)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="P0128">P0128 (Thermostat Stuck Open)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="P0455">P0455 (EVAP Gross Leak)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="P0562">P0562 (System Voltage Low)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="C0035">C0035 (Wheel Speed Sensor)</button>
-            <button type="button" class="chip dtc-quick-code" data-code="U0100">U0100 (Lost ECM Communication)</button>
-          </div>
-
-          <form id="dtc-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">DTC Trouble Code *</label>
-                <input type="text" id="dtc-code-input" class="text-input" placeholder="e.g. P0300 or P0171" required style="font-family: monospace; font-size: 1rem; text-transform: uppercase;">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Freeze-Frame Engine RPM</label>
-                <input type="number" id="ff-rpm" class="text-input" placeholder="e.g. 750 (idle) or 2400">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Short Term Fuel Trim (STFT %)</label>
-                <input type="number" step="0.1" id="ff-stft" class="text-input" placeholder="e.g. +3.5 or -8.0">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Long Term Fuel Trim (LTFT %)</label>
-                <input type="number" step="0.1" id="ff-ltft" class="text-input" placeholder="e.g. +21.0 or -5.0">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Engine Coolant Temp (°F)</label>
-                <input type="number" id="ff-ect" class="text-input" placeholder="e.g. 195">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Battery Voltage at Trigger (V)</label>
-                <input type="number" step="0.1" id="ff-volt" class="text-input" placeholder="e.g. 13.8">
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Run Comprehensive DTC Analysis
+            <button type="button" id="btn-view-technical" class="dual-view-btn" onclick="switchManualView('technical')">
+              📖 <span data-i18n="technicalViewBtn">Technical Manual View</span>
             </button>
-          </form>
-
-          <div id="dtc-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 3. Electrical Multimeter Panel -->
-      <div id="tab-electrical" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🔋 Starting, Charging & Multimeter Analyzer</h2>
-              <p class="card-desc">
-                Calculates battery State-of-Charge (SoC%), starter cranking voltage drop, alternator regulation, and parasitic key-off drain.
-              </p>
-            </div>
           </div>
 
-          <form id="electrical-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">
-                  Resting Battery Voltage (Engine OFF)
-                  <span id="resting-voltage-val" class="val-hint">12.6 V</span>
-                </label>
-                <input type="range" id="resting-voltage-slider" class="range-slider" min="10.0" max="13.2" step="0.05" value="12.6">
-                <span style="font-size: 0.7rem; color: var(--text-dim);">12.66V = 100% | 12.24V = 50% | &lt;11.9V = Dead</span>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Minimum Cranking Voltage (Engine Start)</label>
-                <input type="number" step="0.1" id="cranking-voltage-input" class="text-input" value="10.2" placeholder="e.g. 10.2 (Min 9.6V)">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Alternator Running Voltage (Loads ON)</label>
-                <input type="number" step="0.1" id="alternator-voltage-input" class="text-input" value="14.2" placeholder="e.g. 14.2 (Safe: 13.8V - 14.6V)">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Key-Off Parasitic Standby Drain (mA)</label>
-                <input type="number" step="1" id="parasitic-draw-input" class="text-input" value="35" placeholder="e.g. 35 (Normal &lt;50mA)">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Battery Age (Years)</label>
-                <input type="number" step="0.5" id="battery-age-input" class="text-input" value="2.5" placeholder="e.g. 3.0">
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Compute Electrical Health Verdict
-            </button>
-          </form>
-
-          <div id="electrical-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 4. Cooling & Overheating Panel -->
-      <div id="tab-thermal" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🌡️ Engine Overheating & Cooling System Investigator</h2>
-              <p class="card-desc">
-                Pinpoints thermal failures: Stuck Thermostat, Fan Motor Relay, Clogged Radiator, Water Pump Impeller, or Blown Head Gasket.
-              </p>
-            </div>
-          </div>
-
-          <form id="thermal-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">When does overheating occur?</label>
-                <select id="thermal-condition" class="select-input">
-                  <option value="idle_traffic">At idle / in heavy stop-and-go traffic</option>
-                  <option value="highway_speed">At cruising speeds (50-70 MPH) on highway</option>
-                  <option value="all_times_rapid">Immediately / within 5 minutes of cold start</option>
-                  <option value="climbing_hills">Only when climbing hills or under heavy load</option>
-                  <option value="erratic_spikes">Erratic needle spikes (bounces hot and cold)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Coolant Level in Reservoir</label>
-                <select id="thermal-coolant-level" class="select-input">
-                  <option value="normal">Normal / Full</option>
-                  <option value="low_with_visible_puddle">Low with visible green/orange puddle under car</option>
-                  <option value="low_no_puddle">Low but NO visible puddles anywhere (internal loss)</option>
-                  <option value="empty">Completely empty</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Electric Radiator Fan Operation</label>
-                <select id="thermal-fan-status" class="select-input">
-                  <option value="unknown">Unknown / Not checked</option>
-                  <option value="yes_high_speed">Yes, spinning on high speed when hot</option>
-                  <option value="no_not_spinning">No, fan is completely motionless while hot</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Cabin Interior Heater Vent Output</label>
-                <select id="thermal-heater-output" class="select-input">
-                  <option value="hot">Blows scalding hot air normally</option>
-                  <option value="lukewarm_or_cold">Blows lukewarm or ice-cold air (No flow!)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Radiator Hose Temperature Difference</label>
-                <select id="thermal-hose-temp" class="select-input">
-                  <option value="unknown">Unknown</option>
-                  <option value="both_hot">Both upper and lower hoses are hot</option>
-                  <option value="upper_scalding_lower_cold">Upper hose scalding hot, lower hose is cold (Thermostat closed)</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="justify-content: center;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
-                  <input type="checkbox" id="thermal-smoke-oil" style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
-                  <span>Sweet white exhaust smoke OR milky oil foam</span>
-                </label>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Isolate Cooling System Fault
-            </button>
-          </form>
-
-          <div id="thermal-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 5. NVH Acoustic Identifier Panel -->
-      <div id="tab-acoustic" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🔊 NVH Sound & Vibration Acoustic Identifier</h2>
-              <p class="card-desc">
-                Classifies squeals, grinding, clicking, knocking, and whines based on frequency, location, and driving condition.
-              </p>
-            </div>
-          </div>
-
-          <form id="acoustic-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Sound Category</label>
-                <select id="sound-type" class="select-input">
-                  <option value="squeal_chirp">High-pitched squeal / chirp (Belts, brake wear tab)</option>
-                  <option value="grind_metal">Harsh metallic grinding (Brake backing plate, bearing)</option>
-                  <option value="click_tick">Fast clicking / ticking (CV axle, lifter, blend door)</option>
-                  <option value="knock_thump">Deep rhythmic knocking (Rod bearing, piston slap)</option>
-                  <option value="whine_hum">High-pitched whine or roaring hum (Wheel bearing, pump)</option>
-                  <option value="clunk_pop">Hollow clunk over bumps (Sway bar link, ball joint)</option>
-                  <option value="hiss_air">Hissing air sound (Vacuum leak, A/C leak)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Sound Physical Location</label>
-                <select id="sound-location" class="select-input">
-                  <option value="front_wheel_brakes">Front wheel well / brakes</option>
-                  <option value="engine_front_belt">Front of engine (accessory belts/pulleys)</option>
-                  <option value="engine_internal_block">Deep inside engine block / oil pan</option>
-                  <option value="steering_suspension">Front suspension when turning</option>
-                  <option value="transmission_tunnel">Center console / transmission tunnel</option>
-                  <option value="under_car_exhaust">Underneath vehicle along exhaust</option>
-                  <option value="inside_dash">Behind dashboard inside cabin</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Operating Condition When Heard</label>
-                <select id="sound-condition" class="select-input">
-                  <option value="when_braking">Only when applying brake pedal</option>
-                  <option value="when_turning">Accelerating through sharp corners/turns</option>
-                  <option value="over_bumps">Driving over rough road, bumps, or potholes</option>
-                  <option value="cold_start">First 2-3 minutes of cold morning startup</option>
-                  <option value="accelerating">Pressing accelerator pedal under load</option>
-                  <option value="highway_cruising">Steady cruising at highway speeds (50-65 MPH)</option>
-                  <option value="idle_park">Idling smoothly in Park</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="justify-content: center; gap: 0.6rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
-                  <input type="checkbox" id="sound-speed-dep" style="accent-color: var(--accent-cyan);">
-                  <span>Pitch speeds up with Vehicle Road Speed</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
-                  <input type="checkbox" id="sound-rpm-dep" style="accent-color: var(--accent-cyan);">
-                  <span>Pitch speeds up with Engine RPM (even in Park)</span>
-                </label>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Identify Failing Mechanical Component
-            </button>
-          </form>
-
-          <div id="acoustic-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 6. Brake Safety Evaluator Panel -->
-      <div id="tab-brake" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🛑 Brake System Safety & Wear Evaluator</h2>
-              <p class="card-desc">
-                Calculates brake pad wear threshold, hydraulic pedal firmness, rotor lateral runout, and DOT fluid boiling risk.
-              </p>
-            </div>
-          </div>
-
-          <form id="brake-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">
-                  Brake Pad Friction Thickness (mm)
-                  <span id="brake-pad-val" class="val-hint" style="color: var(--accent-amber);">3.0 mm (CAUTION)</span>
-                </label>
-                <input type="range" id="brake-pad-slider" class="range-slider" min="1.0" max="12.0" step="0.5" value="3.0">
-                <span style="font-size: 0.7rem; color: var(--text-dim);">&gt;6mm = Healthy | 3-4mm = Service Soon | &le;2mm = DANGER (Metal backing)</span>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Pedal Travel & Firmness</label>
-                <select id="brake-pedal-feel" class="select-input">
-                  <option value="normal_firm">Firm and normal response</option>
-                  <option value="spongy_soft">Spongy / soft (requires pumping to stop)</option>
-                  <option value="sinks_to_floor">Pedal slowly sinks to floorboard at traffic light</option>
-                  <option value="hard_high_effort">Rock hard pedal (requires extreme leg effort)</option>
-                  <option value="pulsating_vibrating">Vibrates / kicks back against foot</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Brake Rotor Surface</label>
-                <select id="brake-rotor-cond" class="select-input">
-                  <option value="smooth">Smooth mirror face</option>
-                  <option value="warped_pulsating">Pulsating / shaking steering wheel at 50 MPH</option>
-                  <option value="grooved_scored">Deep gouges or metal scoring grooves</option>
-                  <option value="excessive_rust_lip">Heavy rust scale and lip on outer edge</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Braking Direction Tracking</label>
-                <select id="brake-pull" class="select-input">
-                  <option value="none">Vehicle stops in straight line</option>
-                  <option value="pulls_left">Pulls hard to the left</option>
-                  <option value="pulls_right">Pulls hard to the right</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="justify-content: center;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
-                  <input type="checkbox" id="brake-abs-light" style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
-                  <span>ABS / Traction Control Amber Warning Light ON</span>
-                </label>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Evaluate Braking Road Safety
-            </button>
-          </form>
-
-          <div id="brake-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 7. Transmission & Drivetrain Panel -->
-      <div id="tab-drivetrain" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">⚙️ Transmission & Drivetrain Health Analyzer</h2>
-              <p class="card-desc">
-                Diagnoses automatic transmissions, CVTs, manuals, torque converter shudder, and fluid contamination.
-              </p>
-            </div>
-          </div>
-
-          <form id="drivetrain-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Transmission Architecture</label>
-                <select id="trans-type" class="select-input">
-                  <option value="automatic_torque_converter">Hydraulic Automatic (with Torque Converter)</option>
-                  <option value="cvt_continuously_variable">Continuously Variable Transmission (CVT Belt/Chain)</option>
-                  <option value="manual_clutch">Manual Transmission (Dry Clutch Disc)</option>
-                  <option value="dual_clutch_dct">Dual-Clutch Transmission (DCT)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Shifting Symptom</label>
-                <select id="trans-symptom" class="select-input">
-                  <option value="slipping_rpm_flares">Engine revs flare up without acceleration (Slipping)</option>
-                  <option value="shudder_at_cruising_speed">Rumble-strip shudder at 35-50 MPH cruising</option>
-                  <option value="harsh_shift_jerk">Hard bang / violent jolt shifting into Drive or Reverse</option>
-                  <option value="delayed_drive_reverse">2-3 second delay before gear engages from Park</option>
-                  <option value="grinding_into_gear">Grinding sound when shifting gears (Synchros)</option>
-                  <option value="whine_in_all_gears">High-pitched hydraulic pump whine</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Fluid Color on Dipstick</label>
-                <select id="trans-fluid-color" class="select-input">
-                  <option value="cherry_red_clean">Cherry Red & Translucent (Fresh / Healthy)</option>
-                  <option value="translucent_brown">Light Brown (Service interval approaching)</option>
-                  <option value="dark_burnt_black">Pitch Black & Burnt Acrid Odor (Clutch wear)</option>
-                  <option value="milky_strawberry_shake">Milky Pink Strawberry Milkshake (Coolant leak!)</option>
-                  <option value="unknown">Unknown / Sealed Transmission</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Transmission Fluid Level</label>
-                <select id="trans-fluid-level" class="select-input">
-                  <option value="normal">Normal / Within Hot Hashmarks</option>
-                  <option value="low">Low (Below cold minimum)</option>
-                  <option value="overfilled">Overfilled (Aeration risk)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Analyze Drivetrain Health
-            </button>
-          </form>
-
-          <div id="drivetrain-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 8. Fuel Trim & Emissions Panel -->
-      <div id="tab-emissions" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">💨 Fuel Trim, Economy & Emissions Analyzer</h2>
-              <p class="card-desc">
-                Calculates stoichiometric fuel imbalances, vacuum leaks vs MAF contamination, and tailpipe smoke colors.
-              </p>
-            </div>
-          </div>
-
-          <form id="emissions-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Short Term Fuel Trim at Idle (STFT %)</label>
-                <input type="number" step="0.5" id="em-stft-idle" class="text-input" value="3.5" placeholder="e.g. +3.5">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Long Term Fuel Trim at Idle (LTFT %)</label>
-                <input type="number" step="0.5" id="em-ltft-idle" class="text-input" value="18.5" placeholder="e.g. +18.5">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">STFT at 2,500 RPM (Cruise)</label>
-                <input type="number" step="0.5" id="em-stft-2500" class="text-input" value="1.0" placeholder="e.g. +1.0">
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">LTFT at 2,500 RPM (Cruise)</label>
-                <input type="number" step="0.5" id="em-ltft-2500" class="text-input" value="4.0" placeholder="e.g. +4.0">
-                <span style="font-size: 0.7rem; color: var(--text-dim);">High at idle + Normal at 2500 RPM = VACUUM LEAK</span>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Exhaust Smoke Color</label>
-                <select id="em-exhaust-smoke" class="select-input">
-                  <option value="none">No visible smoke (Clear exhaust)</option>
-                  <option value="black_unburned_fuel">Black smoke / soot (Rich running unburned fuel)</option>
-                  <option value="blue_burning_oil">Blue-gray haze (Burning oil past rings/valves)</option>
-                  <option value="white_sweet_coolant">Thick white puffy sweet vapor (Coolant in cylinder)</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="justify-content: center;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
-                  <input type="checkbox" id="em-fuel-smell" style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
-                  <span>Strong gasoline odor around vehicle / tailpipe</span>
-                </label>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">
-              Compute Stoichiometric Combustion Health
-            </button>
-          </form>
-
-          <div id="emissions-result-box" class="result-card"></div>
-        </div>
-      </div>
-
-      <!-- 9. Guided Problem Wizard Panel -->
-      <div id="tab-wizard" class="tab-panel">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🧙 Multi-Step Interactive Diagnostic Wizard</h2>
-              <p class="card-desc">
-                Follow an intelligent interactive troubleshooting tree that narrows down root causes through targeted symptom questions.
-              </p>
-            </div>
-          </div>
-
-          <!-- Stage 1: Domain Selection -->
-          <div id="wizard-stage-domains">
-            <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Select Your Core Vehicle Issue:</h3>
-            <div class="wizard-options-grid">
-              <button class="wizard-opt-btn wizard-domain-btn" data-domain="no_start">
-                <span style="font-size: 1.5rem;">🔌</span>
-                <span class="opt-title">Engine Won't Start / No Crank</span>
-                <span class="opt-hint">Rapid clicking, dead silence, or cranks fast without starting</span>
-              </button>
-
-              <button class="wizard-opt-btn wizard-domain-btn" data-domain="overheating">
-                <span style="font-size: 1.5rem;">🌡️</span>
-                <span class="opt-title">Engine Overheating / Steam</span>
-                <span class="opt-hint">Temperature gauge in red, bubbling coolant, hot at idle</span>
-              </button>
-
-              <button class="wizard-opt-btn wizard-domain-btn" data-domain="abnormal_noise">
-                <span style="font-size: 1.5rem;">🔊</span>
-                <span class="opt-title">Abnormal Noise or Vibration</span>
-                <span class="opt-hint">Squealing, grinding, rhythmic clicking on turns, deep knock</span>
-              </button>
-
-              <button class="wizard-opt-btn wizard-domain-btn" data-domain="braking_issues">
-                <span style="font-size: 1.5rem;">🛑</span>
-                <span class="opt-title">Braking Weakness or Shaking</span>
-                <span class="opt-hint">Spongy pedal, sinking to floor, steering shake during stop</span>
+          <!-- Search Input Form with Microphone -->
+          <form id="manuals-search-form">
+            <div class="input-with-mic">
+              <input
+                type="text"
+                id="manual-search-input"
+                class="text-input"
+                data-i18n-placeholder="searchPlaceholder"
+                placeholder="Describe symptom, trouble code, or procedure (e.g., 'What causes engine overheating at idle?')..."
+                style="height: 48px; font-size: 0.95rem;"
+                required
+              >
+              <button type="button" id="manuals-mic-btn" class="mic-btn" title="Click to speak your search query">
+                🎤
               </button>
             </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div class="quick-chips" style="margin: 0;">
+                <span style="font-size: 0.72rem; color: var(--text-dim);">Popular Topics:</span>
+                <button type="button" class="chip manual-chip" data-q="What can cause an engine to overheat?">Engine Overheating</button>
+                <button type="button" class="chip manual-chip" data-q="Battery dead clicking sound won't start">Battery Clicking</button>
+                <button type="button" class="chip manual-chip" data-q="Brake pedal spongy and sinks to floor">Brake Pedal Sinking</button>
+                <button type="button" class="chip manual-chip" data-q="P0300 random misfire diagnosis spark coils">Misfire P0300</button>
+                <button type="button" class="chip manual-chip" data-q="Transmission shudder vibration at 40 MPH">Transmission Shudder</button>
+                <button type="button" class="chip manual-chip" data-q="Wheel bearing humming noise when turning">Wheel Bearing Roar</button>
+              </div>
+              <button type="submit" class="btn-primary" style="padding: 0.6rem 1.4rem;">
+                <span data-i18n="searchBtn">Search Knowledge Base</span> &rarr;
+              </button>
+            </div>
+          </form>
+
+          <!-- Voice Output Bar for Manual Results -->
+          <div id="manual-voice-bar" class="voice-player-bar" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span>🔊</span>
+              <span id="manual-voice-status" style="font-size: 0.8rem; font-weight: 600;">Ready to speak explanation</span>
+            </div>
+            <div class="voice-btn-group">
+              <button type="button" id="manual-voice-play" class="voice-btn">▶️ Play</button>
+              <button type="button" id="manual-voice-pause" class="voice-btn">⏸️ Pause</button>
+              <button type="button" id="manual-voice-stop" class="voice-btn">⏹️ Stop</button>
+            </div>
           </div>
 
-          <!-- Stage 2: Question Container -->
-          <div id="wizard-stage-questions" style="display: none;">
-            <div id="wizard-question-content"></div>
-          </div>
+          <!-- Dynamic Results Container -->
+          <div id="manuals-results-container" style="margin-top: 1.5rem;"></div>
 
-          <!-- Final Result Card -->
-          <div id="wizard-result-box" class="result-card"></div>
         </div>
       </div>
+    </section>
 
-      <!-- 10. Repair Pricing & Labor Benchmarks Panel -->
-      <div id="tab-pricing" class="tab-panel">
+    <!-- ======================================================================
+         SECTION 4: AI REPAIR COST ESTIMATOR
+         ====================================================================== -->
+    <section id="view-estimator" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
         <div class="card">
           <div class="card-header">
             <div>
-              <h2 class="card-title">💰 Automotive Repair Pricing & Labor Benchmarks</h2>
+              <h2 class="card-title" data-i18n="navEstimator">💰 Automotive Repair Cost Estimator</h2>
               <p class="card-desc">
-                Industry-standard benchmark pricing ranges for DIY parts, professional mechanic labor hours, and total costs.
+                Calculates transparent repair cost ranges in Indian Rupees (₹) by combining verified spare part benchmarks, labor hours, and local city rates.
               </p>
             </div>
           </div>
 
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+          <!-- Estimator Form -->
+          <form id="estimator-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" data-i18n="vehMakeLabel">Manufacturer</label>
+                <select id="est-make" class="select-input">
+                  <option value="Honda" selected>Honda</option>
+                  <option value="Toyota">Toyota</option>
+                  <option value="Ford">Ford</option>
+                  <option value="Hyundai">Hyundai</option>
+                  <option value="Maruti Suzuki">Maruti Suzuki</option>
+                  <option value="Generic">Generic / All Makes</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" data-i18n="vehModelLabel">Model</label>
+                <select id="est-model" class="select-input">
+                  <option value="Civic" selected>Civic</option>
+                  <option value="Accord">Accord</option>
+                  <option value="Corolla">Corolla</option>
+                  <option value="Camry">Camry</option>
+                  <option value="City">City</option>
+                  <option value="Swift">Swift</option>
+                  <option value="Generic">Standard Powertrain</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" data-i18n="vehYearLabel">Manufacturing Year</label>
+                <input type="number" id="est-year" class="text-input" value="2022" min="1995" max="2026">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">City / Location (Labor Modifier)</label>
+                <select id="est-city" class="select-input">
+                  <option value="Bengaluru" selected>Bengaluru (Tier 1)</option>
+                  <option value="Delhi NCR">Delhi / NCR (Tier 1)</option>
+                  <option value="Mumbai">Mumbai (Tier 1)</option>
+                  <option value="Chennai">Chennai (Tier 1)</option>
+                  <option value="Hyderabad">Hyderabad (Tier 1)</option>
+                  <option value="Pune">Pune (Tier 1)</option>
+                  <option value="Tier-2/3">Tier-2 / Tier-3 Cities</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Problem / Component Query Input with Mic -->
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label">Reported Problem, Symptom, or Spare Part *</label>
+              <div class="input-with-mic">
+                <input
+                  type="text"
+                  id="est-query-input"
+                  class="text-input"
+                  data-i18n-placeholder="estIssuePlaceholder"
+                  placeholder="Enter problem or spare part (e.g., 'Front Brake Pads', 'Alternator', 'Thermostat')..."
+                  style="height: 46px;"
+                  required
+                >
+                <button type="button" id="est-mic-btn" class="mic-btn" title="Click to speak part name">
+                  🎤
+                </button>
+              </div>
+            </div>
+
+            <div class="quick-chips" style="margin-top: 0.5rem;">
+              <span style="font-size: 0.72rem; color: var(--text-dim);">Common Repairs:</span>
+              <button type="button" class="chip est-chip" data-q="Front Brake Pads">Front Brake Pads</button>
+              <button type="button" class="chip est-chip" data-q="Engine Oil & Filter">Engine Oil & Filter</button>
+              <button type="button" class="chip est-chip" data-q="Engine Coolant Thermostat">Thermostat</button>
+              <button type="button" class="chip est-chip" data-q="Alternator">Alternator</button>
+              <button type="button" class="chip est-chip" data-q="12V Starter Battery">12V Starter Battery</button>
+              <button type="button" class="chip est-chip" data-q="Wheel Bearing">Wheel Bearing</button>
+              <button type="button" class="chip est-chip" data-q="Spark Plugs">Spark Plugs</button>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+              <button type="submit" class="btn-primary" style="padding: 0.7rem 1.6rem;">
+                <span data-i18n="estCalculateBtn">Calculate Estimated Cost</span> &rarr;
+              </button>
+            </div>
+          </form>
+
+          <!-- Estimation Result Container -->
+          <div id="estimator-result-container" style="margin-top: 1.5rem;"></div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 5: MECHANIC QUOTATION CHECKER
+         ====================================================================== -->
+    <section id="view-quotations" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" data-i18n="navQuotations">📋 Mechanic Quotation & Invoice Evaluator</h2>
+              <p class="card-desc">
+                Evaluate repair estimates before approving work. Compares quoted spare parts and labor against verified industry benchmarks, highlighting items within, above, or below typical rates.
+              </p>
+            </div>
+          </div>
+
+          <form id="quote-checker-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Quotation / Job Card Title</label>
+                <input type="text" id="quote-job-title" class="text-input" placeholder="e.g., 40,000 km Major Service & Brake Repair" value="General Brake & Service Quote">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Garage / Service Center Name (Optional)</label>
+                <input type="text" id="quote-garage-name" class="text-input" placeholder="e.g., Authorized Dealership / City Auto Works">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location / City</label>
+                <select id="quote-city" class="select-input">
+                  <option value="Bengaluru" selected>Bengaluru</option>
+                  <option value="Delhi NCR">Delhi NCR</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Generic">Other / Tier-2</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Quotation Line Items Table -->
+            <div style="margin-top: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 700;">Quoted Repair Line Items:</h3>
+                <button type="button" id="quote-add-item-btn" class="btn-icon" style="color: var(--accent-cyan); border-color: rgba(56, 189, 248, 0.4);">
+                  <span data-i18n="quoteAddRowBtn">+ Add Another Line Item</span>
+                </button>
+              </div>
+
+              <div class="quote-table-wrapper">
+                <table class="quote-table" id="quote-items-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40%;" data-i18n="quoteItemName">Service or Spare Part Name</th>
+                      <th style="width: 20%;" data-i18n="quotePartPrice">Quoted Part Price (₹)</th>
+                      <th style="width: 20%;" data-i18n="quoteLaborPrice">Quoted Labor (₹)</th>
+                      <th style="width: 10%;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="quote-items-tbody">
+                    <!-- Default Initial Rows -->
+                    <tr class="quote-input-row">
+                      <td><input type="text" class="text-input row-item-name" value="Front Brake Pads Replacement" required></td>
+                      <td><input type="number" class="text-input row-part-price" value="2800" min="0" required></td>
+                      <td><input type="number" class="text-input row-labor-price" value="800" min="0" required></td>
+                      <td style="text-align: center;"><button type="button" class="btn-icon remove-row-btn" style="padding: 0.2rem 0.5rem; color: #fca5a5;">✕</button></td>
+                    </tr>
+                    <tr class="quote-input-row">
+                      <td><input type="text" class="text-input row-item-name" value="Engine Oil & Oil Filter Change" required></td>
+                      <td><input type="number" class="text-input row-part-price" value="2200" min="0" required></td>
+                      <td><input type="number" class="text-input row-labor-price" value="600" min="0" required></td>
+                      <td style="text-align: center;"><button type="button" class="btn-icon remove-row-btn" style="padding: 0.2rem 0.5rem; color: #fca5a5;">✕</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+              <button type="submit" class="btn-primary" style="padding: 0.75rem 1.75rem;">
+                <span data-i18n="quoteEvaluateBtn">Compare Against Benchmark</span> &rarr;
+              </button>
+            </div>
+          </form>
+
+          <!-- Quotation Evaluation Results Container -->
+          <div id="quote-results-container" style="margin-top: 1.5rem;"></div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 6: MY VEHICLES MANAGEMENT
+         ====================================================================== -->
+    <section id="view-vehicles" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 class="card-title" data-i18n="navVehicles">🚗 My Vehicles Management</h2>
+              <p class="card-desc">
+                Save and manage your vehicles. Selected active vehicle auto-populates diagnostics, manual searches, and maintenance reminders across the platform.
+              </p>
+            </div>
+            <button type="button" id="add-vehicle-btn" class="btn-primary">
+              <span data-i18n="vehAddBtn">+ Add New Vehicle</span>
+            </button>
+          </div>
+
+          <!-- Vehicle Cards Grid -->
+          <div id="vehicles-grid" class="vehicle-grid">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 7: MAINTENANCE TRACKER
+         ====================================================================== -->
+    <section id="view-maintenance" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 class="card-title" data-i18n="navMaintenance">🔧 Preventive Maintenance Tracker</h2>
+              <p class="card-desc">
+                Tracks scheduled automotive maintenance based on elapsed time and vehicle mileage. Alerts you before minor wear causes expensive failures.
+              </p>
+            </div>
+            <div id="maint-summary-pill" class="status-pill">
+              <span class="status-dot"></span>
+              <span id="maint-summary-text">Loading maintenance schedule...</span>
+            </div>
+          </div>
+
+          <!-- Maintenance Items Table -->
+          <div class="quote-table-wrapper" style="margin-top: 1rem;">
+            <table class="quote-table">
               <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-dim); text-transform: uppercase; font-size: 0.72rem;">
-                  <th style="padding: 0.75rem 1rem;">Repair Job</th>
-                  <th style="padding: 0.75rem 1rem;">DIY Parts Cost (₹)</th>
-                  <th style="padding: 0.75rem 1rem;">Pro Labor</th>
-                  <th style="padding: 0.75rem 1rem;">Pro Total Cost (₹)</th>
-                  <th style="padding: 0.75rem 1rem;">Difficulty Rating</th>
+                <tr>
+                  <th data-i18n="maintServiceType">Service Routine</th>
+                  <th>Interval</th>
+                  <th data-i18n="maintLastDate">Last Service</th>
+                  <th data-i18n="maintNextDue">Next Due</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="price-guide-tbody">
+              <tbody id="maintenance-tbody">
                 <!-- Injected via JavaScript -->
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
     </section>
-  </main>
-  </div> <!-- /view-studio -->
 
-  <!-- Work Order Printable Modal -->
+    <!-- ======================================================================
+         SECTION 8: SETTINGS & PREFERENCES
+         ====================================================================== -->
+    <section id="view-settings" class="view-section">
+      <div class="app-container" style="flex-direction: column;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" data-i18n="navSettings">⚙️ Platform Settings & Voice Configuration</h2>
+              <p class="card-desc">
+                Customize internationalization, speech synthesis parameters, voice profiles, and review product transparency guidelines.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top: 1rem;">
+            <!-- Language Setting -->
+            <div class="form-group">
+              <label class="form-label" data-i18n="settingsLanguageLabel">Interface Language</label>
+              <select id="settings-lang-select" class="select-input">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                <option value="ar">العربية (Arabic - RTL)</option>
+                <option value="ur">اردو (Urdu - RTL)</option>
+              </select>
+            </div>
+
+            <!-- Voice Selection -->
+            <div class="form-group">
+              <label class="form-label">Available Speech Voice</label>
+              <select id="settings-voice-select" class="select-input">
+                <option value="">Browser Default Voice</option>
+              </select>
+            </div>
+
+            <!-- Voice Speed -->
+            <div class="form-group">
+              <label class="form-label">
+                <span data-i18n="settingsVoiceSpeed">Voice Speed</span>: <span id="voice-rate-val">1.0x</span>
+              </label>
+              <input type="range" id="settings-voice-rate" class="range-slider" min="0.5" max="1.8" step="0.1" value="1.0">
+            </div>
+
+            <!-- Voice Pitch -->
+            <div class="form-group">
+              <label class="form-label">
+                <span data-i18n="settingsVoicePitch">Voice Pitch</span>: <span id="voice-pitch-val">1.0</span>
+              </label>
+              <input type="range" id="settings-voice-pitch" class="range-slider" min="0.5" max="1.5" step="0.1" value="1.0">
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="settings-test-voice-btn" class="btn-icon" style="color: var(--accent-cyan);">
+              🔊 <span data-i18n="settingsTestVoiceBtn">Test Voice Synthesis</span>
+            </button>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+              <input type="checkbox" id="settings-auto-voice" checked style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
+              <span data-i18n="settingsVoiceAutoPlay">Automatically speak AI explanations</span>
+            </label>
+          </div>
+
+          <!-- Product Philosophy & Disclaimers -->
+          <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+              Product Philosophy & Safety Principles
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.75rem;">
+              <strong>AutoAssist AI</strong> is designed to reduce the technical information gap between vehicle owners and repair shops.
+              By combining verified OEM technical manuals with accessible explanations and transparent repair benchmarks, we empower drivers to make informed, confident maintenance decisions.
+            </p>
+            <ul style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; padding-left: 1.25rem;">
+              <li>AutoAssist AI is an informational tool and does NOT replace hands-on inspection by certified automotive professionals.</li>
+              <li>Estimated repair prices are based on Indian automotive aftermarket benchmarks in INR (₹) and vary by workshop, city, and vehicle trim.</li>
+              <li>When verified pricing data is not available in our records, we state "Pricing data unavailable" rather than fabricating estimates.</li>
+              <li>Critical vehicle safety hazards (e.g., brake hydraulic collapse, fuel leaks, loss of steering) always trigger an immediate DO NOT DRIVE recommendation.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div> <!-- /app-main-content -->
+
+  <!-- ======================================================================
+       MODAL 1: ADD / EDIT VEHICLE MODAL
+       ====================================================================== -->
+  <div id="vehicle-modal" class="modal-overlay">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <button id="vehicle-modal-close" class="modal-close">&times;</button>
+      <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-main);" id="vehicle-modal-title">
+        Add Vehicle Profile
+      </h2>
+      <form id="vehicle-form">
+        <input type="hidden" id="veh-form-id" value="">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" data-i18n="vehMakeLabel">Manufacturer *</label>
+            <input type="text" id="veh-form-make" class="text-input" placeholder="e.g., Honda, Toyota" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="vehModelLabel">Model *</label>
+            <input type="text" id="veh-form-model" class="text-input" placeholder="e.g., Civic, Corolla" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="vehYearLabel">Manufacturing Year *</label>
+            <input type="number" id="veh-form-year" class="text-input" value="2022" min="1990" max="2026" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="vehFuelLabel">Fuel Type *</label>
+            <select id="veh-form-fuel" class="select-input">
+              <option value="Petrol" selected>Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Electric">Electric (EV)</option>
+              <option value="CNG">CNG</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="vehOdometerLabel">Current Odometer (km) *</label>
+            <input type="number" id="veh-form-mileage" class="text-input" value="45000" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">City / Location</label>
+            <input type="text" id="veh-form-city" class="text-input" value="Bengaluru">
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+            <input type="checkbox" id="veh-form-default" checked style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
+            <span data-i18n="vehSetDefaultBtn">Set as Active Vehicle</span>
+          </label>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn-icon" onclick="document.getElementById('vehicle-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn-primary" data-i18n="vehSaveBtn">Save Vehicle Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: WORK ORDER EXPORT MODAL
+       ====================================================================== -->
   <div id="work-order-modal" class="modal-overlay">
     <div class="modal-dialog">
       <button id="modal-close-btn" class="modal-close">&times;</button>
@@ -1104,6 +1219,9 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=2.6"></script>
+  <!-- Scripts: i18n, Voice Engine & Main Application Logic -->
+  <script src="/static/js/i18n.js?v=2.7"></script>
+  <script src="/static/js/voice.js?v=2.7"></script>
+  <script src="/static/js/app.js?v=2.7"></script>
 </body>
 </html>

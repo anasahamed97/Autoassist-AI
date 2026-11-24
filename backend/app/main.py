@@ -8,6 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.api.rag import router as rag_router
 from backend.app.api.analyzers import router as analyzers_router
+from backend.app.api.vehicles import router as vehicles_router
+from backend.app.api.pricing import router as pricing_router
+from backend.app.api.quotations import router as quotations_router
+from backend.app.api.maintenance import router as maintenance_router
+from backend.app.api.severity import router as severity_router
 
 # Configure logging format
 logging.basicConfig(
@@ -39,6 +44,11 @@ app.add_middleware(
 # Register routers
 app.include_router(rag_router)
 app.include_router(analyzers_router)
+app.include_router(vehicles_router)
+app.include_router(pricing_router)
+app.include_router(quotations_router)
+app.include_router(maintenance_router)
+app.include_router(severity_router)
 
 # Mount static web assets if directory exists
 if settings.static_dir.exists():
@@ -58,7 +68,7 @@ async def root(request: Request):
 
     return {
         "platform": "AutoAssist AI",
-        "milestone": "Full Automotive Diagnostic & Service Assistance Platform",
+        "milestone": "Full Automotive Diagnostic, Cost Estimation & Service Assistance Platform",
         "status": "online",
         "embedding_model": settings.embedding_model_name,
         "embedding_dimension": settings.embedding_dimension,
@@ -66,6 +76,12 @@ async def root(request: Request):
         "website_url": "/",
         "endpoints": {
             "search": "POST /api/rag/search",
+            "explain_manual": "POST /api/rag/explain",
+            "vehicles": "GET/POST/PUT/DELETE /api/vehicles",
+            "pricing_estimate": "POST /api/pricing/estimate",
+            "quotations_evaluate": "POST /api/quotations/evaluate",
+            "maintenance_overview": "GET /api/maintenance/overview",
+            "severity_assess": "POST /api/severity/assess",
             "analyzers_catalog": "GET /api/analyzers/catalog",
             "dtc_analyzer": "POST /api/analyzers/dtc",
             "electrical_analyzer": "POST /api/analyzers/electrical",
