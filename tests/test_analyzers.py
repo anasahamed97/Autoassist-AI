@@ -13,7 +13,7 @@ def test_analyzer_catalog():
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    assert len(data) >= 8
+    assert len(data) >= 7
     analyzer_ids = [a["id"] for a in data]
     assert "dtc_code_analyzer" in analyzer_ids
     assert "electrical_multimeter_analyzer" in analyzer_ids

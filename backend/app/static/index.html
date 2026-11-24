@@ -55,13 +55,15 @@
         <span id="header-vehicle-name">Honda Civic (2022)</span>
       </div>
 
-      <!-- Language Selector Dropdown -->
+      <!-- Language Selector Dropdown (7 Languages) -->
       <select id="language-selector" class="lang-selector" aria-label="Select Language">
         <option value="en">English</option>
-        <option value="hi">हिन्दी (Hindi)</option>
         <option value="kn">ಕನ್ನಡ (Kannada)</option>
-        <option value="ar">العربية (Arabic - RTL)</option>
+        <option value="hi">हिन्दी (Hindi)</option>
         <option value="ur">اردو (Urdu - RTL)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="te">తెలుగు (Telugu)</option>
       </select>
 
       <!-- Voice Output Toggle Button -->
@@ -207,11 +209,6 @@
               <span class="demo-text"><strong>225°F Overheating</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">Stuck thermostat / Radiator delta-T</span></span>
               <span class="demo-tag">Run Thermal &rarr;</span>
             </button>
-            <button type="button" class="demo-btn" onclick="runDemo('acoustic_whine')">
-              <span class="demo-icon">🔊</span>
-              <span class="demo-text"><strong>1,200 Hz Noise</strong><br><span style="color: var(--text-dim); font-size: 0.72rem;">High-pitched alternator diode whine</span></span>
-              <span class="demo-tag">Run NVH &rarr;</span>
-            </button>
           </div>
         </div>
 
@@ -244,10 +241,6 @@
           <button type="button" class="tab-btn" data-tab="tab-thermal" onclick="switchStudioTab('tab-thermal')">
             <span class="tab-icon">🌡️</span>
             <span>Cooling & Overheating</span>
-          </button>
-          <button type="button" class="tab-btn" data-tab="tab-acoustic" onclick="switchStudioTab('tab-acoustic')">
-            <span class="tab-icon">🔊</span>
-            <span>NVH Sound Identifier</span>
           </button>
           <button type="button" class="tab-btn" data-tab="tab-brake" onclick="switchStudioTab('tab-brake')">
             <span class="tab-icon">🛑</span>
@@ -477,65 +470,7 @@
             </div>
           </div>
 
-          <!-- Tab 5: Acoustic NVH Panel -->
-          <div id="tab-acoustic" class="tab-panel">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title">🔊 NVH Sound & Vibration Acoustic Identifier</h2>
-                  <p class="card-desc">Classifies squeals, grinding, clicking, knocking, and whines based on frequency, location, and driving condition.</p>
-                </div>
-              </div>
-              <form id="acoustic-form">
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label class="form-label">Sound Category</label>
-                    <select id="sound-type" class="select-input">
-                      <option value="squeal_chirp">High-pitched squeal / chirp (Belts, brake wear tab)</option>
-                      <option value="grind_metal">Harsh metallic grinding (Brake backing plate, bearing)</option>
-                      <option value="click_tick">Fast clicking / ticking (CV axle, lifter, blend door)</option>
-                      <option value="knock_thump">Deep rhythmic knocking (Rod bearing, piston slap)</option>
-                      <option value="whine_hum">High-pitched whine or roaring hum (Wheel bearing, pump)</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Sound Physical Location</label>
-                    <select id="sound-location" class="select-input">
-                      <option value="front_wheel_brakes">Front wheel well / brakes</option>
-                      <option value="engine_front_belt">Front of engine (accessory belts/pulleys)</option>
-                      <option value="engine_internal_block">Deep inside engine block / oil pan</option>
-                      <option value="steering_suspension">Front suspension when turning</option>
-                      <option value="transmission_tunnel">Center console / transmission tunnel</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Operating Condition When Heard</label>
-                    <select id="sound-condition" class="select-input">
-                      <option value="when_braking">Only when applying brake pedal</option>
-                      <option value="when_turning">Accelerating through sharp corners/turns</option>
-                      <option value="over_bumps">Driving over rough road, bumps, or potholes</option>
-                      <option value="cold_start">First 2-3 minutes of cold morning startup</option>
-                      <option value="accelerating">Pressing accelerator pedal under load</option>
-                    </select>
-                  </div>
-                  <div class="form-group" style="justify-content: center; gap: 0.6rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
-                      <input type="checkbox" id="sound-speed-dep" style="accent-color: var(--accent-cyan);">
-                      <span>Pitch speeds up with Vehicle Road Speed</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem;">
-                      <input type="checkbox" id="sound-rpm-dep" style="accent-color: var(--accent-cyan);">
-                      <span>Pitch speeds up with Engine RPM (even in Park)</span>
-                    </label>
-                  </div>
-                </div>
-                <button type="submit" class="btn-primary">Identify Failing Mechanical Component</button>
-              </form>
-              <div id="acoustic-result-box" class="result-card"></div>
-            </div>
-          </div>
-
-          <!-- Tab 6: Brake Safety Panel -->
+          <!-- Tab 5: Brake Safety Panel -->
           <div id="tab-brake" class="tab-panel">
             <div class="card">
               <div class="card-header">
@@ -1085,10 +1020,12 @@
               <label class="form-label" data-i18n="settingsLanguageLabel">Interface Language</label>
               <select id="settings-lang-select" class="select-input">
                 <option value="en">English</option>
-                <option value="hi">हिन्दी (Hindi)</option>
                 <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                <option value="ar">العربية (Arabic - RTL)</option>
+                <option value="hi">हिन्दी (Hindi)</option>
                 <option value="ur">اردو (Urdu - RTL)</option>
+                <option value="ml">മലയാളം (Malayalam)</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+                <option value="te">తెలుగు (Telugu)</option>
               </select>
             </div>
 

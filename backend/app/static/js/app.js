@@ -55,11 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initQuotationChecker();
   initSettingsPanel();
 
-  // Initialize all 8 specialized diagnostic analyzers
+  // Initialize specialized diagnostic analyzers
   initDTCScanner();
   initElectricalAnalyzer();
   initThermalAnalyzer();
-  initAcousticAnalyzer();
   initBrakeAnalyzer();
   initDrivetrainAnalyzer();
   initEmissionsAnalyzer();
@@ -1662,43 +1661,7 @@ function initThermalAnalyzer() {
   });
 }
 
-// 5. NVH Acoustic Sound Analyzer
-function initAcousticAnalyzer() {
-  const form = document.getElementById("acoustic-form");
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showLoadingInResultBox("acoustic-result-box", "Matching NVH Harmonic Spectrum & Component Resonances...");
-
-    const payload = {
-      sound_type: document.getElementById("sound-type")?.value || "squeal_chirp",
-      location: document.getElementById("sound-location")?.value || "front_wheel_brakes",
-      condition: document.getElementById("sound-condition")?.value || "when_braking",
-      speed_dependent: document.getElementById("sound-speed-dep")?.checked || false,
-      rpm_dependent: document.getElementById("sound-rpm-dep")?.checked || false,
-      include_rag_chunks: true,
-    };
-
-    try {
-      const resp = await fetch("/api/analyzers/acoustic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.detail || `Server returned HTTP ${resp.status}`);
-      }
-      const data = await resp.json();
-      renderDiagnosticResult(data, "acoustic-result-box");
-    } catch (err) {
-      renderErrorResult("Acoustic Analysis error: " + err.message, "acoustic-result-box");
-    }
-  });
-}
-
-// 6. Brake System Analyzer
+// 5. Brake System Analyzer
 function initBrakeAnalyzer() {
   const form = document.getElementById("brake-form");
   const padSlider = document.getElementById("brake-pad-slider");
@@ -2078,23 +2041,6 @@ window.runDemo = function (demoType) {
       if (thForm) {
         if (thForm.requestSubmit) thForm.requestSubmit();
         else thForm.dispatchEvent(new Event("submit"));
-      }
-    }, 150);
-  } else if (demoType === "acoustic_whine") {
-    switchStudioTab("tab-acoustic");
-    setTimeout(() => {
-      const soundType = document.getElementById("sound-type");
-      const location = document.getElementById("sound-location");
-      const condition = document.getElementById("sound-condition");
-      const rpmDep = document.getElementById("sound-rpm-dep");
-      const acForm = document.getElementById("acoustic-form");
-      if (soundType) soundType.value = "whine_hum";
-      if (location) location.value = "engine_front_belt";
-      if (condition) condition.value = "accelerating";
-      if (rpmDep) rpmDep.checked = true;
-      if (acForm) {
-        if (acForm.requestSubmit) acForm.requestSubmit();
-        else acForm.dispatchEvent(new Event("submit"));
       }
     }, 150);
   }

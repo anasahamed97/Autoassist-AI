@@ -59,8 +59,8 @@ class QuotationService:
                 )
                 continue
 
-            # Reference bounds
-            city_rate = 650.0
+            # Dynamic city labor rate lookup
+            city_rate = self.pricing_service._get_labor_rate(req.city)
             ref_part_min = matched_ref["part_price_min"] * item.quantity
             ref_part_max = matched_ref["part_price_max"] * item.quantity
             ref_labor_min = matched_ref["labor_hours_min"] * city_rate

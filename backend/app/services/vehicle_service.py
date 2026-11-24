@@ -23,9 +23,14 @@ class VehicleService:
     def _init_client(self):
         if settings.supabase_url and (settings.supabase_key or settings.supabase_service_role_key):
             try:
-                self._supabase = get_supabase_client(admin=False)
+                # Use admin client for backend service operations to ensure persistent data flow
+                self._supabase = get_supabase_client(admin=True)
             except Exception as e:
-                logger.warning("VehicleService: Supabase not active (%s). Using local storage.", e)
+                logger.warning("VehicleService: Supabase admin client failed (%s). Trying default client.", e)
+                try:
+                    self._supabase = get_supabase_client(admin=False)
+                except Exception as inner_e:
+                    logger.warning("VehicleService: Supabase not active (%s). Using local storage.", inner_e)
 
     def _load_local_store(self):
         if self._local_file.exists():
@@ -72,23 +77,30 @@ class VehicleService:
             except Exception as e:
                 logger.warning("Supabase vehicles fetch failed: %s. Falling back to local store.", e)
 
-        # Fallback
+        # Fallback to local store scoped to user_id
         user_vehs = [v for v in self._local_cache.values() if v.get("user_id") == user_id]
-        if not user_vehs and self._local_cache:
+        if not user_vehs and user_id == "default_user" and self._local_cache:
             user_vehs = list(self._local_cache.values())
         return [VehicleOut(**v) for v in user_vehs]
 
-    def get_vehicle(self, vehicle_id: str) -> Optional[VehicleOut]:
+    def get_vehicle(self, vehicle_id: str, user_id: Optional[str] = None) -> Optional[VehicleOut]:
         if self._supabase is not None:
             try:
-                res = self._supabase.table("vehicles").select("*").eq("id", vehicle_id).execute()
+                query = self._supabase.table("vehicles").select("*").eq("id", vehicle_id)
+                if user_id:
+                    query = query.eq("user_id", user_id)
+                res = query.execute()
                 if res.data:
                     return VehicleOut(**res.data[0])
             except Exception as e:
                 logger.warning("Supabase vehicle get failed: %s", e)
 
         v = self._local_cache.get(vehicle_id)
-        return VehicleOut(**v) if v else None
+        if v:
+            if user_id and v.get("user_id") != user_id:
+                return None  # Ownership check failed
+            return VehicleOut(**v)
+        return None
 
     def get_default_vehicle(self, user_id: str = "default_user") -> Optional[VehicleOut]:
         all_vehs = self.list_vehicles(user_id)
@@ -106,7 +118,7 @@ class VehicleService:
         data["created_at"] = now
         data["updated_at"] = now
 
-        # If set as default, reset other defaults
+        # If set as default, reset other defaults for this user
         if data.get("is_default"):
             for v in self._local_cache.values():
                 if v.get("user_id") == user_id:
@@ -129,8 +141,13 @@ class VehicleService:
         self._save_local_store()
         return VehicleOut(**data)
 
-    def update_vehicle(self, vehicle_id: str, updates: VehicleUpdate, user_id: str = "default_user") -> Optional[VehicleOut]:
-        existing = self.get_vehicle(vehicle_id)
+    def update_vehicle(
+        self,
+        vehicle_id: str,
+        updates: VehicleUpdate,
+        user_id: str = "default_user"
+    ) -> Optional[VehicleOut]:
+        existing = self.get_vehicle(vehicle_id, user_id=user_id)
         if not existing:
             return None
 
@@ -146,7 +163,7 @@ class VehicleService:
             try:
                 if update_dict.get("is_default"):
                     self._supabase.table("vehicles").update({"is_default": False}).eq("user_id", user_id).execute()
-                res = self._supabase.table("vehicles").update(update_dict).eq("id", vehicle_id).execute()
+                res = self._supabase.table("vehicles").update(update_dict).eq("id", vehicle_id).eq("user_id", user_id).execute()
                 if res.data:
                     updated = res.data[0]
                     self._local_cache[vehicle_id] = updated
@@ -161,10 +178,14 @@ class VehicleService:
         self._save_local_store()
         return VehicleOut(**data)
 
-    def delete_vehicle(self, vehicle_id: str) -> bool:
+    def delete_vehicle(self, vehicle_id: str, user_id: str = "default_user") -> bool:
+        existing = self.get_vehicle(vehicle_id, user_id=user_id)
+        if not existing:
+            return False
+
         if self._supabase is not None:
             try:
-                self._supabase.table("vehicles").delete().eq("id", vehicle_id).execute()
+                self._supabase.table("vehicles").delete().eq("id", vehicle_id).eq("user_id", user_id).execute()
             except Exception as e:
                 logger.warning("Supabase vehicle delete failed: %s", e)
 

@@ -83,14 +83,14 @@ class SeverityService:
                 badge_title="MODERATE – Inspection Recommended",
                 is_safe_to_drive=True,
                 urgency_level="Within 7 - 14 Days",
-                rationale=" ".join(reasons) or "Vehicle exhibits abnormal performance symptoms that may accelerate component wear or degrade fuel economy if left unaddressed.",
+                rationale=" ".join(reasons) or "Vehicle exhibits abnormal performance symptoms that may accelerate component wear or degrade fuel economy if left unaddressed. (Advisory guidance based on symptoms; not a certified inspection).",
                 warning_signs=[
                     "Illuminated Check Engine Light (steady, non-flashing)",
                     "Subsystem performance degradation or unusual operating noises",
                     "Minor coolant or oil seepage without sudden fluid loss",
                     "Intermittent starting hesitation or battery age fatigue"
                 ],
-                immediate_action="Drive with extra caution. Avoid high-speed highway driving or heavy towing until checked. Schedule an appointment with a qualified mechanic.",
+                immediate_action="Drive with heightened vigilance. Avoid high-speed highway driving or heavy towing until checked. Schedule an appointment with a qualified mechanic.",
                 mechanic_visit_advice="Schedule inspection within 7 to 14 days to prevent minor wear from becoming an expensive secondary failure.",
                 stop_driving_notice=None
             )
@@ -101,13 +101,13 @@ class SeverityService:
             badge_title="LOW – General Attention",
             is_safe_to_drive=True,
             urgency_level="Next Scheduled Service",
-            rationale="Reported symptom represents routine maintenance, minor cosmetic wear, or non-urgent operational observation.",
+            rationale="Reported symptom represents routine maintenance, minor cosmetic wear, or non-urgent operational observation. (Educational guidance; always confirm with physical inspection if symptoms change).",
             warning_signs=[
                 "Scheduled service interval approaching",
                 "Minor cabin filter or wiper blade wear",
                 "Non-critical cosmetic or minor operational query"
             ],
-            immediate_action="Vehicle is safe to drive under normal conditions. Monitor fluid levels and address at your next routine service interval.",
+            immediate_action="No immediate road hazard detected based on reported symptoms. Continue driving with standard caution, monitor for changes in vehicle handling, and have a qualified technician inspect at your next service.",
             mechanic_visit_advice="Discuss at your next routine oil change or scheduled maintenance visit.",
             stop_driving_notice=None
         )

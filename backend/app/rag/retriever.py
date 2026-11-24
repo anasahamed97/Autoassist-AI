@@ -4,6 +4,7 @@ from typing import List, Optional, Dict, Any
 from backend.app.config import settings
 from backend.app.database import get_supabase_client
 from backend.app.rag.embeddings import get_embedding_model
+from backend.app.rag.multilingual import normalize_automotive_query
 from backend.app.schemas.rag import RAGSearchResultItem, RAGSearchResponse
 
 logger = logging.getLogger(__name__)
@@ -58,8 +59,9 @@ class AutomotiveRetriever:
         )
         filter_meta = filters or {}
 
-        # 1. Generate query embedding (384-dimensional normalized vector)
-        query_vector = self.embedding_model.embed_query(query)
+        # 1. Normalize query across 7 languages & generate query embedding (384-dimensional normalized vector)
+        normalized_q = normalize_automotive_query(query)
+        query_vector = self.embedding_model.embed_query(normalized_q)
 
         items: List[RAGSearchResultItem] = []
 

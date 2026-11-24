@@ -413,9 +413,23 @@ class PricingService:
     def _init_client(self):
         if settings.supabase_url and (settings.supabase_key or settings.supabase_service_role_key):
             try:
-                self._supabase = get_supabase_client(admin=False)
+                self._supabase = get_supabase_client(admin=True)
+                res = self._supabase.table("repair_pricing").select("*").execute()
+                if res.data and len(res.data) > 0:
+                    logger.info("PricingService: Loaded %d benchmark records from Supabase.", len(res.data))
+                    for row in res.data:
+                        if not row.get("keywords"):
+                            row["keywords"] = [row["part_name"].lower()]
+                    self._items = res.data
             except Exception as e:
-                logger.warning("PricingService: Supabase not active (%s). Using reference catalog.", e)
+                logger.warning("PricingService: Supabase query failed (%s). Using reference catalog.", e)
+
+    def _get_labor_rate(self, city: Optional[str] = None) -> float:
+        """Returns the hourly labor rate in INR for the requested city or fallback."""
+        if not city:
+            return 650.0
+        city_lower = city.lower().strip()
+        return CITY_LABOR_RATES.get(city_lower, 650.0)
 
     def list_catalog(self, category: Optional[str] = None) -> List[Dict[str, Any]]:
         if category:

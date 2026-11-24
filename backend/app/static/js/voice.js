@@ -21,10 +21,12 @@ class VoiceManager {
 
     this.langMap = {
       en: "en-US",
-      hi: "hi-IN",
       kn: "kn-IN",
-      ar: "ar-SA",
-      ur: "ur-PK"
+      hi: "hi-IN",
+      ur: "ur-PK",
+      ml: "ml-IN",
+      ta: "ta-IN",
+      te: "te-IN"
     };
 
     this._initSpeechRecognition();

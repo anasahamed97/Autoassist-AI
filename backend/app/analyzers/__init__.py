@@ -54,15 +54,6 @@ def get_analyzer_catalog() -> List[Dict[str, Any]]:
             "sample_query": "Overheats at idle, heater blows lukewarm air"
         },
         {
-            "id": "acoustic_nvh_analyzer",
-            "name": "NVH Sound & Vibration Acoustic Identifier",
-            "subsystem": "Acoustics & Mechanical Drivetrain",
-            "description": "Classifies squeals, grinding, clicking, knocking, and whines based on location and driving condition.",
-            "endpoint": "POST /api/analyzers/acoustic",
-            "icon": "volume-2",
-            "sample_query": "Metallic grinding when braking or rhythmic clicking when turning"
-        },
-        {
             "id": "brake_system_analyzer",
             "name": "Brake System Safety & Rotor Runout Evaluator",
             "subsystem": "Hydraulic Brakes & ABS",
