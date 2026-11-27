@@ -1,10 +1,16 @@
-# AutoAssist AI - Milestone 1 Requirements
+# AutoAssist AI - Milestone Requirements
 # Note: Most of these packages are already available in your Anaconda Python environment.
 
 # API Framework
 fastapi>=0.110.0
 uvicorn>=0.28.0
 starlette>=0.36.0
+python-multipart>=0.0.9
+
+# Multilingual Speech Synthesis & Recognition
+gTTS>=2.5.0
+SpeechRecognition>=3.10.0
+deep-translator>=1.11.0
 
 # Database & Supabase Vector Store
 supabase>=2.3.0

@@ -32,6 +32,7 @@ class RAGSearchRequest(BaseModel):
     )
     manufacturer: Optional[str] = Field(None, description="Filter by manufacturer")
     vehicle_model: Optional[str] = Field(None, description="Filter by vehicle model")
+    language: Optional[str] = Field(default="en", description="Target language: en, kn, hi, ur, ml, ta, te")
 
 
 class RAGSearchResultItem(BaseModel):

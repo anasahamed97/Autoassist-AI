@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 from backend.app.rag.retriever import AutomotiveRetriever
 from backend.app.schemas.rag import RAGSearchResultItem
 from backend.app.schemas.explanation import SimpleExplanation, DualViewManualResult
+from backend.app.services.translation_service import get_translation_service
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class ExplanationService:
         manufacturer: Optional[str] = None,
         vehicle_model: Optional[str] = None,
         top_k: int = 5,
+        language: Optional[str] = "en",
     ) -> DualViewManualResult:
         # Retrieve real technical chunks via existing RAG pipeline
         filters = {}
@@ -45,6 +47,12 @@ class ExplanationService:
 
         passages = rag_resp.results
         simple_explanation = self._synthesize_grounded_explanation(query, passages)
+
+        # Localize explanation if target language is not English
+        if language and language != "en":
+            simple_explanation = get_translation_service().localize_explanation(
+                simple_explanation, query, target_lang=language
+            )
 
         return DualViewManualResult(
             query=query,

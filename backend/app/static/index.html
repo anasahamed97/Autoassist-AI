@@ -37,7 +37,7 @@
         📋 <span data-i18n="navQuotations">Quotation Checker</span>
       </button>
       <button type="button" class="nav-link" data-section="vehicles" onclick="navigateToSection('vehicles')">
-        🚗 <span data-i18n="navVehicles">My Vehicles</span>
+        🚗 <span data-i18n="navVehicles">My Vehicle</span>
       </button>
       <button type="button" class="nav-link" data-section="maintenance" onclick="navigateToSection('maintenance')">
         🔧 <span data-i18n="navMaintenance">Maintenance</span>
@@ -148,13 +148,13 @@
 
         <!-- 4 Quick Action Diagnostic Cards -->
         <div class="intro-grid" style="margin-bottom: 2rem;">
-          <div class="intro-card" onclick="navigateToSection('assistant')">
+          <div class="intro-card" onclick="startQuickVoiceDiagnostic()">
             <div class="card-icon">🎙️</div>
             <h3 data-i18n="dashQuickVoice">Quick Voice Diagnostic</h3>
             <p data-i18n="dashQuickVoiceDesc">Press the microphone to describe strange sounds, dashboard warnings, or performance issues in your preferred language.</p>
             <div class="card-bottom-row">
               <span class="card-badge">Web Speech API</span>
-              <button type="button" class="card-action-btn">Speak Now &rarr;</button>
+              <button type="button" class="card-action-btn" onclick="event.stopPropagation(); startQuickVoiceDiagnostic();">Speak Now &rarr;</button>
             </div>
           </div>
 
@@ -292,7 +292,7 @@
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                  <div class="quick-chips" style="margin: 0;">
+                  <div class="quick-chips" id="assistant-quick-chips" style="margin: 0;">
                     <span style="font-size: 0.72rem; color: var(--text-dim);">Examples:</span>
                     <button type="button" class="chip assist-chip" data-q="Engine overheating rapidly with bubbling coolant">Overheating & Bubbling</button>
                     <button type="button" class="chip assist-chip" data-q="Brake pedal sinking to floor when stopped">Brake Pedal Sinking</button>
@@ -940,7 +940,7 @@
         <div class="card">
           <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h2 class="card-title" data-i18n="navVehicles">🚗 My Vehicles Management</h2>
+              <h2 class="card-title">🚗 <span data-i18n="vehSectionTitle">My Vehicle Management</span></h2>
               <p class="card-desc">
                 Save and manage your vehicles. Selected active vehicle auto-populates diagnostics, manual searches, and maintenance reminders across the platform.
               </p>

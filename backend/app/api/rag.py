@@ -85,6 +85,7 @@ async def explain_manual_query(request: RAGSearchRequest) -> DualViewManualResul
             manufacturer=request.manufacturer,
             vehicle_model=request.vehicle_model,
             top_k=request.top_k or 5,
+            language=getattr(request, "language", "en") or "en",
         )
     except Exception as e:
         logger.error("Dual view explanation error: %s", e, exc_info=True)

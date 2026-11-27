@@ -133,6 +133,72 @@ window.switchStudioTab = function (tabId) {
   });
 };
 
+// Multilingual Quick Test Chips for AI Assistant input
+const MULTILINGUAL_EXAMPLE_CHIPS = {
+  en: [
+    { label: "Overheating & Bubbling", q: "Engine overheating rapidly with bubbling coolant" },
+    { label: "Brake Pedal Sinking", q: "Brake pedal sinking to floor when stopped" },
+    { label: "Serpentine Belt Squeal", q: "High-pitched squeal when accelerating in morning" },
+    { label: "Dead Battery Clicking", q: "Rapid clicking sound when turning key won't start" },
+  ],
+  kn: [
+    { label: "🔥 ಎಂಜಿನ್ ಬಿಸಿಯಾಗುತ್ತಿದೆ", q: "ಎಂಜಿನ್ ಅತಿಯಾಗಿ ಬಿಸಿಯಾಗುತ್ತಿದೆ ಮತ್ತು ಕೂಲೆಂಟ್ ಕುದಿಯುತ್ತಿದೆ" },
+    { label: "🛑 ಬ್ರೇಕ್ ಪೆಡಲ್ ಕುಸಿತ", q: "ಬ್ರೇಕ್ ಹಾಕಿದಾಗ ಪೆಡಲ್ ನೆಲಕ್ಕೆ ಕುಸಿಯುತ್ತಿದೆ" },
+    { label: "🔋 ಬ್ಯಾಟರಿ ಡೆಡ್ - ಕ್ಲಿಕ್ ಶಬ್ದ", q: "ಕೀ ತಿರುಗಿಸಿದಾಗ ಕೇವಲ ಕ್ಲಿಕ್ ಶಬ್ದ ಬರ್ತಿದೆ ಗಾಡಿ ಸ್ಟಾರ್ಟ್ ಆಗ್ತಿಲ್ಲ" },
+    { label: "⚡ ಚೆಕ್ ಎಂಜಿನ್ ಲೈಟ್", q: "ಚೆಕ್ ಎಂಜಿನ್ ಲೈಟ್ ಉರಿಯುತ್ತಿದೆ ಮತ್ತು ಎಂಜಿನ್ ನಡುಗುತ್ತಿದೆ" },
+  ],
+  hi: [
+    { label: "🔥 इंजन बहुत गरम हो रहा है", q: "इंजन बहुत अधिक गरम हो रहा है और धुआं निकल रहा है" },
+    { label: "🛑 ब्रेक पेडल नीचे धंस रहा है", q: "ब्रेक लगाने पर पेडल फर्श तक धंस जाता है" },
+    { label: "🔋 बैटरी डिस्चार्ज - टिक-टिक", q: "चाबी घुमाने पर सिर्फ टिक टिक आवाज़ आ रही है गाड़ी स्टार्ट नहीं हो रही" },
+    { label: "⚡ चेक इंजन लाइट", q: "चेक इंजन लाइट जल रही है और गाड़ी झटका ले रही है" },
+  ],
+  ur: [
+    { label: "🔥 انجن زیادہ گرم ہو رہا ہے", q: "گاڑی کا انجن بہت زیادہ گرم ہو رہا ہے اور ریڈی ایٹر ابل رہا ہے" },
+    { label: "🛑 بریک پیڈل دب رہا ہے", q: "بریک دبانے پر پیڈل بالکل نیچے چلا جاتا ہے" },
+    { label: "🔋 بیٹری ڈیڈ - کلک کی آواز", q: "چابی گھمانے پر کلک کی آواز آ رہی ہے گاڑی سٹارٹ نہیں ہو رہی" },
+  ],
+  ml: [
+    { label: "🔥 എഞ്ചിൻ അമിതമായി ചൂടാകുന്നു", q: "എഞ്ചിൻ അമിതമായി ചൂടാകുന്നു കൂളന്റ് തിളയ്ക്കുന്നു" },
+    { label: "🛑 ബ്രേക്ക് പെഡൽ താഴേക്ക് പോകുന്നു", q: "ബ്രേക്ക് പെഡൽ അമർത്തുമ്പോൾ താഴേക്ക് പോവുന്നു" },
+    { label: "🔋 ബാറ്ററി ഡിസ്ചാർജ്", q: "കീ തിരിക്കുമ്പോൾ ക്ലിക്ക് ശബ്ദം മാത്രം വാഹനം സ്റ്റാർട്ടാവുന്നില്ല" },
+  ],
+  ta: [
+    { label: "🔥 என்ஜின் அதிக வெப்பமடைகிறது", q: "என்ஜின் அதிக வெப்பமடைகிறது மற்றும் கூலன்ட் கொதிக்கிறது" },
+    { label: "🛑 பிரேக் பெடல் கீழே இறங்குகிறது", q: "பிரேக் பிடிக்கும்போது பெடல் தரை வரை இறங்குகிறது" },
+    { label: "🔋 பேட்டரி டிக் டிக் சத்தம்", q: "சாவியை திருப்பும்போது டிக் டிக் சத்தம் மட்டும் கேட்கிறது வாகனம் ஸ்டார்ட் ஆகவில்லை" },
+  ],
+  te: [
+    { label: "🔥 ఇంజిన్ వేడెక్కుతోంది", q: "ఇంజిన్ తీవ్రంగా వేడెక్కుతోంది మరియు కూలెంట్ ఉడుకుతోంది" },
+    { label: "🛑 బ్రేక్ పెడల్ కిందకు దిగుతోంది", q: "బ్రేక్ వేసినప్పుడు పెడల్ కిందకు దిగిపోతోంది" },
+    { label: "🔋 బ్యాటరీ డిశ్చార్జ్", q: "కీ తిప్పినప్పుడు క్లిక్ శబ్దం మాత్రమే వస్తోంది కారు స్టార్ట్ అవ్వడం లేదు" },
+  ],
+};
+
+function renderMultilingualChips(langCode) {
+  const container = document.getElementById("assistant-quick-chips");
+  const input = document.getElementById("assistant-input");
+  const form = document.getElementById("assistant-chat-form");
+  if (!container) return;
+
+  const list = MULTILINGUAL_EXAMPLE_CHIPS[langCode] || MULTILINGUAL_EXAMPLE_CHIPS.en;
+  container.innerHTML = `
+    <span style="font-size: 0.72rem; color: var(--text-dim);">Examples:</span>
+    ${list.map((item) => `
+      <button type="button" class="chip assist-chip" data-q="${item.q}">${item.label}</button>
+    `).join("")}
+  `;
+
+  container.querySelectorAll(".assist-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (input) {
+        input.value = btn.dataset.q;
+        if (form) form.dispatchEvent(new Event("submit"));
+      }
+    });
+  });
+}
+
 // ==========================================================================
 // 2. Multilingual (i18n) Engine & Theme
 // ==========================================================================
@@ -149,6 +215,7 @@ function initI18nAndLanguage() {
     if (window.voiceManager) {
       window.voiceManager.updateLanguage(langCode);
     }
+    renderMultilingualChips(langCode);
   };
 
   if (topLangSelect) {
@@ -196,7 +263,7 @@ function initVoiceControls() {
 
     voiceToggleBtn.addEventListener("click", () => {
       const current = window.voiceManager.voiceOutputEnabled;
-      window.voiceManager.setVoiceOutputEnabled(!current);
+      window.voiceManager.toggleVoiceOutput(!current);
       updateVoiceBtn();
     });
   }
@@ -254,12 +321,15 @@ function setupVoicePlayerBar(barId, statusId, playId, pauseId, stopId, getTextTo
       } else {
         const text = getTextToSpeak();
         if (text) {
-          window.voiceManager.speak(text, (state) => {
+          const currentLang = (window.i18n && window.i18n.currentLang) || "en";
+          window.voiceManager.speak(text, currentLang, (state) => {
             if (statusElem) {
-              if (state === "start") statusElem.innerText = "Speaking explanation...";
-              else if (state === "end") statusElem.innerText = "Playback completed";
-              else if (state === "pause") statusElem.innerText = "Playback paused";
-              else if (state === "resume") statusElem.innerText = "Speaking explanation...";
+              if (state === "loading") statusElem.innerText = "⏳ Buffering audio...";
+              else if (state === "start" || state === "playing") statusElem.innerText = "🔊 Speaking explanation...";
+              else if (state === "end" || state === "stopped") statusElem.innerText = "Playback completed";
+              else if (state === "pause" || state === "paused") statusElem.innerText = "Playback paused";
+              else if (state === "resume") statusElem.innerText = "🔊 Speaking explanation...";
+              else if (state === "error") statusElem.innerText = "⚠️ Audio playback error";
             }
           });
         }
@@ -317,13 +387,16 @@ function initVehiclesModule() {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const vehId = document.getElementById("veh-form-id").value;
+      const odo = parseInt(document.getElementById("veh-form-mileage").value, 10) || 45000;
+      const city = document.getElementById("veh-form-city").value.trim() || "Bengaluru";
       const payload = {
         make: document.getElementById("veh-form-make").value.trim(),
         model: document.getElementById("veh-form-model").value.trim(),
         year: parseInt(document.getElementById("veh-form-year").value, 10),
         fuel_type: document.getElementById("veh-form-fuel").value,
-        mileage_km: parseInt(document.getElementById("veh-form-mileage").value, 10),
-        city: document.getElementById("veh-form-city").value.trim() || "Bengaluru",
+        odometer: odo,
+        mileage_km: odo,
+        city: city,
         is_default: document.getElementById("veh-form-default").checked,
       };
 
@@ -343,11 +416,14 @@ function initVehiclesModule() {
           });
         }
 
-        if (!resp.ok) throw new Error("Failed to save vehicle profile");
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server returned error (${resp.status})`);
+        }
         modal.classList.remove("open");
         await loadVehicles();
       } catch (err) {
-        alert("Error saving vehicle: " + err.message);
+        alert("Error saving vehicle profile: " + err.message);
       }
     });
   }
@@ -378,9 +454,12 @@ function updateActiveVehicleUI(v) {
   const dashVeh = document.getElementById("dash-metric-vehicle");
   const dashOdo = document.getElementById("dash-metric-odo");
 
+  const odo = v.odometer || v.mileage_km || 45000;
+  const city = v.city || (v.metadata && v.metadata.city) || "Bengaluru";
+
   if (headerVeh) headerVeh.innerText = `${v.make} ${v.model} (${v.year})`;
   if (dashVeh) dashVeh.innerText = `${v.make} ${v.model}`;
-  if (dashOdo) dashOdo.innerText = `${(v.mileage_km || 45000).toLocaleString()} km • ${v.year} ${v.fuel_type || "Petrol"}`;
+  if (dashOdo) dashOdo.innerText = `${odo.toLocaleString()} km • ${v.year} ${v.fuel_type || "Petrol"}`;
 
   // Sync with Cost Estimator inputs
   const estMake = document.getElementById("est-make");
@@ -390,7 +469,7 @@ function updateActiveVehicleUI(v) {
   if (estMake && v.make) estMake.value = v.make;
   if (estModel && v.model) estModel.value = v.model;
   if (estYear && v.year) estYear.value = v.year;
-  if (estCity && v.city) estCity.value = v.city;
+  if (estCity && city) estCity.value = city;
 }
 
 function renderVehiclesGrid(vehicles) {
@@ -408,17 +487,20 @@ function renderVehiclesGrid(vehicles) {
 
   grid.innerHTML = vehicles
     .map(
-      (v) => `
+      (v) => {
+        const odo = v.odometer || v.mileage_km || 0;
+        const city = v.city || (v.metadata && v.metadata.city) || "Bengaluru";
+        return `
     <div class="vehicle-card ${v.is_default ? "is-default" : ""}">
       ${v.is_default ? `<span class="vehicle-card-badge">★ Active Vehicle</span>` : ""}
       <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">
         ${v.make} ${v.model}
       </h3>
       <div style="font-size: 0.82rem; color: var(--accent-cyan); margin-bottom: 0.75rem;">
-        ${v.year} &bull; ${v.fuel_type || "Petrol"} &bull; ${(v.mileage_km || 0).toLocaleString()} km
+        ${v.year} &bull; ${v.fuel_type || "Petrol"} &bull; ${odo.toLocaleString()} km
       </div>
       <div style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 1.25rem;">
-        Location: <strong>${v.city || "Bengaluru"}</strong>
+        Location: <strong>${city}</strong>
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
         ${
@@ -430,7 +512,8 @@ function renderVehiclesGrid(vehicles) {
         <button class="btn-icon" onclick="deleteVehicle('${v.id}')" style="font-size: 0.75rem; color: #fca5a5;">Delete</button>
       </div>
     </div>
-  `
+  `;
+      }
     )
     .join("");
 }
@@ -458,12 +541,12 @@ window.editVehicle = function (vehId) {
   const modal = document.getElementById("vehicle-modal");
   document.getElementById("vehicle-modal-title").innerText = "Edit Vehicle Profile";
   document.getElementById("veh-form-id").value = v.id;
-  document.getElementById("veh-form-make").value = v.make;
-  document.getElementById("veh-form-model").value = v.model;
-  document.getElementById("veh-form-year").value = v.year;
+  document.getElementById("veh-form-make").value = v.make || "";
+  document.getElementById("veh-form-model").value = v.model || "";
+  document.getElementById("veh-form-year").value = v.year || 2022;
   document.getElementById("veh-form-fuel").value = v.fuel_type || "Petrol";
-  document.getElementById("veh-form-mileage").value = v.mileage_km;
-  document.getElementById("veh-form-city").value = v.city || "Bengaluru";
+  document.getElementById("veh-form-mileage").value = v.odometer || v.mileage_km || 45000;
+  document.getElementById("veh-form-city").value = v.city || (v.metadata && v.metadata.city) || "Bengaluru";
   document.getElementById("veh-form-default").checked = !!v.is_default;
   if (modal) modal.classList.add("open");
 };
@@ -657,11 +740,15 @@ function initAssistantChat() {
       state.manualResult = ragData;
       renderAssistantResult(ragData, resultContainer);
 
-      // Speak if auto-voice enabled
-      const autoVoice = document.getElementById("settings-auto-voice");
-      if (autoVoice && autoVoice.checked && window.voiceManager && ragData.simple_explanation) {
-        const textToSpeak = `${ragData.simple_explanation.what_does_it_mean} ${ragData.simple_explanation.what_should_you_do}`;
-        window.voiceManager.speak(textToSpeak);
+      // Automatically speak explanation when query is taken and analyzed
+      if (window.voiceManager && ragData.simple_explanation) {
+        const autoVoice = document.getElementById("settings-auto-voice");
+        const isAutoEnabled = !autoVoice || autoVoice.checked;
+        if (isAutoEnabled) {
+          setTimeout(() => {
+            speakCurrentAssistantResult();
+          }, 150);
+        }
       }
     } catch (err) {
       if (resultContainer) {
@@ -749,8 +836,27 @@ function renderAssistantResult(data, container) {
 window.speakCurrentAssistantResult = function () {
   if (!window.voiceManager || !state.manualResult || !state.manualResult.simple_explanation) return;
   const exp = state.manualResult.simple_explanation;
-  const text = `${exp.what_does_it_mean} Why does it happen? ${exp.why_does_it_happen} What should you do? ${exp.what_should_you_do}`;
-  window.voiceManager.speak(text);
+  const currentLang = (window.i18n && window.i18n.currentLang) || "en";
+  const statusElem = document.getElementById("assist-voice-status");
+  const parts = [];
+  if (exp.what_does_it_mean) parts.push(exp.what_does_it_mean);
+  if (exp.why_does_it_happen) parts.push(exp.why_does_it_happen);
+  if (Array.isArray(exp.what_should_you_do)) {
+    parts.push(exp.what_should_you_do.join(". "));
+  } else if (exp.what_should_you_do) {
+    parts.push(exp.what_should_you_do);
+  }
+  const text = parts.join(" ");
+  const langLabel = (window.voiceManager.langNames && window.voiceManager.langNames[currentLang]) || currentLang;
+  window.voiceManager.speak(text, currentLang, (state) => {
+    if (statusElem) {
+      if (state === "loading") statusElem.innerText = "⏳ Buffering audio in " + langLabel + "...";
+      else if (state === "start" || state === "playing") statusElem.innerText = "🔊 Speaking in " + langLabel + "...";
+      else if (state === "end" || state === "stopped") statusElem.innerText = "Playback completed";
+      else if (state === "pause" || state === "paused") statusElem.innerText = "Playback paused";
+      else if (state === "error") statusElem.innerText = "⚠️ Audio playback error";
+    }
+  });
 };
 
 // ==========================================================================
@@ -818,6 +924,18 @@ function initManualsSearch() {
 
       if (voiceBar) voiceBar.style.display = "flex";
       renderManualSearchResults();
+
+      // Automatically speak explanation when manual query is taken
+      if (window.voiceManager && data.simple_explanation) {
+        const autoVoice = document.getElementById("settings-auto-voice");
+        const isAutoEnabled = !autoVoice || autoVoice.checked;
+        if (isAutoEnabled) {
+          const playBtn = document.getElementById("manual-voice-play");
+          if (playBtn) {
+            setTimeout(() => playBtn.click(), 150);
+          }
+        }
+      }
     } catch (err) {
       if (container) {
         container.innerHTML = `
@@ -1324,15 +1442,42 @@ function initSettingsPanel() {
       const lang = (window.i18n && window.i18n.currentLang) || "en";
       const sampleTexts = {
         en: "AutoAssist AI voice synthesis online. Engine diagnostic telemetry verified.",
-        hi: "ऑटोअसिस्ट एआई आवाज़ संश्लेषण तैयार है। आपका वाहन डायग्नोस्टिक सत्यापित है।",
         kn: "ಆಟೋಅಸಿಸ್ಟ್ ಎಐ ಧ್ವನಿ ಸಿದ್ಧವಾಗಿದೆ. ವಾಹನ ತಪಾಸಣೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
-        ar: "تم تشغيل نظام التحدث الآلي أوتو أسيست. التشخيص جاهز.",
+        hi: "ऑटोअसिस्ट एआई आवाज़ संश्लेषण तैयार है। आपका वाहन डायग्नोस्टिक सत्यापित है।",
         ur: "آٹو اسسٹ اے آئی آواز فعال ہے۔ گاڑی کی تشخیص کی تصدیق ہو چکی ہے۔",
+        ml: "ഓട്ടോഅസിസ്റ്റ് എഐ ശബ്ദ സംവിധാനം സജ്ജമാണ്. വാഹന പരിശോധന സ്ഥിരീകരിച്ചു.",
+        ta: "ஆட்டோஅசிஸ்ட் ஏஐ குரல் முறைமை தயார். வாகன கண்டறிதல் சரிபார்க்கப்பட்டது.",
+        te: "ఆటోఅసిస్ట్ AI వాయిస్ సిస్టమ్ సిద్ధంగా ఉంది. వాహన డయాగ్నస్టిక్ ధృవీకరించబడింది.",
       };
-      window.voiceManager.speak(sampleTexts[lang] || sampleTexts.en);
+      const origText = testVoiceBtn.innerHTML;
+      testVoiceBtn.innerHTML = "⏳ Buffering...";
+      window.voiceManager.speak(sampleTexts[lang] || sampleTexts.en, lang, (state) => {
+        if (state === "start" || state === "playing") {
+          testVoiceBtn.innerHTML = "🔊 Speaking...";
+        } else if (state === "end" || state === "stopped" || state === "error") {
+          testVoiceBtn.innerHTML = origText;
+        }
+      });
     });
   }
 }
+
+window.startQuickVoiceDiagnostic = function () {
+  if (typeof navigateToSection === "function") {
+    navigateToSection("assistant");
+  }
+  if (typeof switchStudioTab === "function") {
+    switchStudioTab("tab-assistant-chat");
+  }
+  setTimeout(() => {
+    const input = document.getElementById("assistant-input");
+    const micBtn = document.getElementById("assistant-mic-btn");
+    if (input) input.focus();
+    if (micBtn && window.voiceManager && !window.voiceManager.isRecording) {
+      micBtn.click();
+    }
+  }, 200);
+};
 
 // ==========================================================================
 // 11. Preserved Specialized Analyzers: DTC, Electrical, Thermal, NVH, etc.

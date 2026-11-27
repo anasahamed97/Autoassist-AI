@@ -13,6 +13,7 @@ from backend.app.api.pricing import router as pricing_router
 from backend.app.api.quotations import router as quotations_router
 from backend.app.api.maintenance import router as maintenance_router
 from backend.app.api.severity import router as severity_router
+from backend.app.api.voice import router as voice_router
 
 # Configure logging format
 logging.basicConfig(
@@ -49,6 +50,7 @@ app.include_router(pricing_router)
 app.include_router(quotations_router)
 app.include_router(maintenance_router)
 app.include_router(severity_router)
+app.include_router(voice_router)
 
 # Mount static web assets if directory exists
 if settings.static_dir.exists():
